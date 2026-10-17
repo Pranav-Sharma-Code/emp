@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<a class="back" href="{{ url_for('examiner.exams') }}">&larr; Back to my exams</a>
+<h2>{{ exam.name }}</h2>
+<table>
+  <tr><th>Course</th><td>{{ course.code }} - {{ course.name }}</td></tr>
+  <tr><th>Type</th><td>{{ exam.exam_type.value }}</td></tr>
+  <tr><th>Duration</th><td>{{ exam.duration_minutes }} min</td></tr>
+  <tr><th>Max marks</th><td>{{ exam.max_marks }}</td></tr>
+  <tr><th>Slot creation</th><td>{{ exam.slot_create_start }} to {{ exam.slot_create_end }}</td></tr>
+  <tr><th>Booking</th><td>{{ exam.booking_start }} to {{ exam.booking_end }}</td></tr>
+  <tr><th>Status</th><td><span class="badge {{ exam.status.value }}">{{ exam.status.value }}</span></td></tr>
+</table>
+
+<h3>Rubric</h3>
+<table>
+  <tr><th>Criterion</th><th>Max marks</th><th>Weightage %</th></tr>
+  {% for r in rubrics %}
+  <tr><td>{{ r.criterion_name }}</td><td>{{ r.max_marks }}</td><td>{{ r.weightage }}</td></tr>
+  {% endfor %}
+</table>
+
+<h3>My slots for this exam</h3>
+{% if can_create %}
+  <p><a class="btn" href="{{ url_for('examiner.slot_new', exam=exam.id) }}">+ New Slot</a></p>
+{% else %}
+  <div class="alert warning">Slot creation is not open for this exam right now.</div>
+{% endif %}
+<table>
+  <tr><th>Date</th><th>Time</th><th>Capacity</th><th>Seats left</th><th>Status</th></tr>
+  {% for s in my_slots %}
+  <tr>
+    <td>{{ s.slot_date }}</td>
+    <td>{{ s.start_time.strftime('%H:%M') }} - {{ s.end_time.strftime('%H:%M') }}</td>
+    <td>{{ s.capacity }}</td>
+    <td>{{ s.available_seats }}</td>
+    <td><span class="badge {{ s.status.value }}">{{ s.status.value }}</span></td>
+  </tr>
+  {% else %}
+  <tr><td colspan="5">No slots yet.</td></tr>
+  {% endfor %}
+</table>
+<p><a href="{{ url_for('examiner.slots') }}">Manage all my slots &rarr;</a></p>
+{% endblock %}

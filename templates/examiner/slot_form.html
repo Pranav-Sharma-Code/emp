@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ 'Edit' if slot else 'New' }} Slot</h2>
+<p>Exam: <b>{{ exam.name }}</b> ({{ exam.duration_minutes }} min)</p>
+<form method="post" class="box">
+  <label>Date</label>
+  <input type="date" name="slot_date" value="{{ v.get('slot_date', '') }}" required>
+  <label>Start time</label>
+  <input type="time" name="start_time" value="{{ v.get('start_time', '') }}" required>
+  <label>End time</label>
+  <input type="time" name="end_time" value="{{ v.get('end_time', '') }}" required>
+  <label>Capacity (students)</label>
+  <input type="number" name="capacity" min="1" value="{{ v.get('capacity', '') }}" required>
+  <button class="btn">Save</button>
+  <a class="btn light" href="{{ url_for('examiner.exam_detail', exam_id=exam.id) if not slot else url_for('examiner.slots') }}">Cancel</a>
+</form>
+{% endblock %}

@@ -1,9 +1,16 @@
 import enum
 
+from sqlalchemy import Enum
+
+
+def sa_enum(enum_class):
+    return Enum(enum_class, values_callable=lambda e: [m.value for m in e])
+
+
 class UserRole(enum.Enum):
     Admin = "admin"
-    Student = "Student"
-    Examiner = "Examiner"
+    Student = "student"
+    Examiner = "examiner"
 
 
 class UserStatus(enum.Enum):
@@ -13,7 +20,7 @@ class UserStatus(enum.Enum):
     Inactive = "inactive"
 
 
-class Examtype(enum.Enum):
+class ExamType(enum.Enum):
     Viva = "viva"
     Practical = "practical"
     Project = "project"
@@ -28,7 +35,7 @@ class ExamState(enum.Enum):
     Completed = "completed"
 
 
-class SlotsStatus(enum.Enum):
+class SlotStatus(enum.Enum):
     Available = "available"
     Full = "full"
     Cancelled = "cancelled"
@@ -39,3 +46,8 @@ class BookingStatus(enum.Enum):
     Booked = "booked"
     Cancelled = "cancelled"
     Completed = "completed"
+
+
+class EvaluationStatus(enum.Enum):
+    Draft = "draft"
+    Submitted = "submitted"

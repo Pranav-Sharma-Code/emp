@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<a class="back" href="{{ url_for('student.dashboard') }}">&larr; Back to dashboard</a>
+<h2>My Bookings</h2>
+<table>
+  <tr><th>Exam</th><th>Date</th><th>Time</th><th>Booked on</th><th>Action</th></tr>
+  {% for b, slot, exam in rows %}
+  <tr>
+    <td>{{ exam.name }}</td>
+    <td>{{ slot.slot_date }}</td>
+    <td>{{ slot.start_time.strftime('%H:%M') }} - {{ slot.end_time.strftime('%H:%M') }}</td>
+    <td>{{ b.booking_date.strftime('%d %b %Y %H:%M') }}</td>
+    <td>
+      <form method="post" action="{{ url_for('student.cancel', booking_id=b.id) }}">
+        <button class="btn small danger">Cancel booking</button>
+      </form>
+    </td>
+  </tr>
+  {% else %}
+  <tr><td colspan="5">No active bookings. <a href="{{ url_for('student.exams') }}">Find an exam</a></td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

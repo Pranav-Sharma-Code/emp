@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EMP</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+  <div class="navbar">
+    <h1>Exam Portal</h1>
+    {% if session.user_id %}
+    <form method="post" action="{{ url_for('auth.logout') }}">
+      <span>{{ session.name }} ({{ session.role }})</span>
+      <button class="btn small">Logout</button>
+    </form>
+    {% endif %}
+
+  </div>
+
+  <div class="container">
+    {% for message in get_flashed_messages() %}
+    <div class="alert">{{ message }}</div>
+    {% endfor %}
+    {% block content %}{% endblock %}
+  </div>
+</body>
+
+</html>

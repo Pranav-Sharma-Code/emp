@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ role|capitalize }} Register</h2>
+<form method="post" class="box">
+  <input name="name" placeholder="Full name" required>
+  <input type="email" name="email" placeholder="Email" required>
+  <input name="phone" placeholder="Phone">
+  {% if role == 'student' %}
+    <input name="enrollment_no" placeholder="Enrollment no." required>
+  {% else %}
+    <input name="department" placeholder="Department" required>
+  {% endif %}
+  <input type="password" name="password" placeholder="Password" required minlength="6">
+  <button class="btn">Register</button>
+  <a class="btn light" href="{{ url_for('home') }}">Cancel</a>
+</form>
+{% endblock %}

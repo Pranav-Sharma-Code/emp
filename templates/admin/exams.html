@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<a class="back" href="{{ url_for('admin.dashboard') }}">&larr; Back to dashboard</a>
+<h2>Exams</h2>
+<p><a class="btn" href="{{ url_for('admin.exam_new') }}">+ New Exam</a></p>
+<table>
+  <tr><th>Name</th><th>Course</th><th>Type</th><th>Status</th><th>Action</th></tr>
+  {% for exam, course in rows %}
+  <tr>
+    <td>{{ exam.name }}</td>
+    <td>{{ course.code }}</td>
+    <td>{{ exam.exam_type.value }}</td>
+    <td><span class="badge {{ exam.status.value }}">{{ exam.status.value }}</span></td>
+    <td><a href="{{ url_for('admin.exam_detail', exam_id=exam.id) }}">Open</a></td>
+  </tr>
+  {% else %}
+  <tr><td colspan="5">No exams yet.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

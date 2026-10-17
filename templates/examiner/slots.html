@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<a class="back" href="{{ url_for('examiner.dashboard') }}">&larr; Back to dashboard</a>
+<h2>My Slots</h2>
+<table>
+  <tr><th>Exam</th><th>Date</th><th>Time</th><th>Capacity</th><th>Seats left</th><th>Status</th><th>Action</th></tr>
+  {% for slot, exam, editable in items %}
+  <tr>
+    <td>{{ exam.name }}</td>
+    <td>{{ slot.slot_date }}</td>
+    <td>{{ slot.start_time.strftime('%H:%M') }} - {{ slot.end_time.strftime('%H:%M') }}</td>
+    <td>{{ slot.capacity }}</td>
+    <td>{{ slot.available_seats }}</td>
+    <td><span class="badge {{ slot.status.value }}">{{ slot.status.value }}</span></td>
+    <td>
+      {% if editable %}
+      <div class="actions">
+        <a class="btn light small" href="{{ url_for('examiner.slot_edit', slot_id=slot.id) }}">Edit</a>
+        <form method="post" action="{{ url_for('examiner.slot_cancel', slot_id=slot.id) }}">
+          <button class="btn small danger">Cancel slot</button>
+        </form>
+      </div>
+      {% else %}-{% endif %}
+    </td>
+  </tr>
+  {% else %}
+  <tr><td colspan="7">No slots yet. Open one of your exams to create slots.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

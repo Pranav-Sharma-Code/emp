@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ 'Edit' if exam else 'New' }} Exam</h2>
+<form method="post" class="box">
+  <label>Course</label>
+  <select name="course_id" required>
+    {% for c in courses %}
+    <option value="{{ c.id }}" {{ 'selected' if v.get('course_id')|string == c.id|string }}>{{ c.code }} - {{ c.name }}</option>
+    {% endfor %}
+  </select>
+
+  <label>Exam name</label>
+  <input name="name" value="{{ v.get('name', '') }}" required>
+
+  <label>Type</label>
+  <select name="exam_type">
+    {% for t in types %}
+    <option value="{{ t }}" {{ 'selected' if v.get('exam_type') == t }}>{{ t|capitalize }}</option>
+    {% endfor %}
+  </select>
+
+  <label>Duration (minutes)</label>
+  <input type="number" name="duration_minutes" min="1" value="{{ v.get('duration_minutes', '') }}" required>
+
+  <label>Max marks</label>
+  <input type="number" name="max_marks" min="1" value="{{ v.get('max_marks', '') }}" required>
+
+  <label>Slot creation starts</label>
+  <input type="datetime-local" name="slot_create_start" value="{{ v.get('slot_create_start', '') }}" required>
+  <label>Slot creation ends</label>
+  <input type="datetime-local" name="slot_create_end" value="{{ v.get('slot_create_end', '') }}" required>
+  <label>Booking starts</label>
+  <input type="datetime-local" name="booking_start" value="{{ v.get('booking_start', '') }}" required>
+  <label>Booking ends</label>
+  <input type="datetime-local" name="booking_end" value="{{ v.get('booking_end', '') }}" required>
+
+  <button class="btn">Save</button>
+  <a class="btn light" href="{{ url_for('admin.exam_detail', exam_id=exam.id) if exam else url_for('admin.exams') }}">Cancel</a>
+</form>
+{% endblock %}

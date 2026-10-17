@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<a class="back" href="{{ url_for('student.dashboard') }}">&larr; Back to dashboard</a>
+<h2>Booking History</h2>
+<table>
+  <tr><th>Exam</th><th>Date</th><th>Time</th><th>Status</th></tr>
+  {% for b, slot, exam in rows %}
+  <tr>
+    <td>{{ exam.name }}</td>
+    <td>{{ slot.slot_date }}</td>
+    <td>{{ slot.start_time.strftime('%H:%M') }} - {{ slot.end_time.strftime('%H:%M') }}</td>
+    <td><span class="badge {{ b.status.value }}">{{ b.status.value }}</span></td>
+  </tr>
+  {% else %}
+  <tr><td colspan="4">No bookings yet.</td></tr>
+  {% endfor %}
+</table>
+
+<h3>Activity log</h3>
+<table>
+  <tr><th>When</th><th>Exam</th><th>Action</th></tr>
+  {% for h, exam in events %}
+  <tr>
+    <td>{{ h.created_at.strftime('%d %b %Y %H:%M') }}</td>
+    <td>{{ exam.name }}</td>
+    <td>{{ h.action }}</td>
+  </tr>
+  {% else %}
+  <tr><td colspan="3">Nothing yet.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

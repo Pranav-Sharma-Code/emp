@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<a class="back" href="{{ url_for('admin.dashboard') }}">&larr; Back to dashboard</a>
+<h2>Examiners</h2>
+<table>
+  <tr><th>Name</th><th>Email</th><th>Department</th><th>Status</th><th>Action</th></tr>
+  {% for p in people %}
+  <tr>
+    <td>{{ p.name }}</td>
+    <td>{{ p.email }}</td>
+    <td>{{ p.department }}</td>
+    <td><span class="badge {{ p.status.value }}">{{ p.status.value }}</span></td>
+    <td>
+      {% if p.status.value == 'pending' %}
+        <form method="post" action="{{ url_for('admin.examiner_action', user_id=p.id, action='approve') }}" style="display:inline"><button class="btn small">Approve</button></form>
+        <form method="post" action="{{ url_for('admin.examiner_action', user_id=p.id, action='reject') }}" style="display:inline"><button class="btn small">Reject</button></form>
+      {% elif p.status.value == 'active' %}
+        <form method="post" action="{{ url_for('admin.examiner_action', user_id=p.id, action='deactivate') }}" style="display:inline"><button class="btn small">Deactivate</button></form>
+      {% else %}
+        <form method="post" action="{{ url_for('admin.examiner_action', user_id=p.id, action='reactivate') }}" style="display:inline"><button class="btn small">Reactivate</button></form>
+      {% endif %}
+    </td>
+  </tr>
+  {% else %}
+  <tr><td colspan="5">No examiners yet.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

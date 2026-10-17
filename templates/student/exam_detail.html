@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<a class="back" href="{{ url_for('student.exams') }}">&larr; Back to exams</a>
+<h2>{{ exam.name }}</h2>
+<table>
+  <tr><th>Course</th><td>{{ course.code }} - {{ course.name }}</td></tr>
+  <tr><th>Type</th><td>{{ exam.exam_type.value }}</td></tr>
+  <tr><th>Duration</th><td>{{ exam.duration_minutes }} min</td></tr>
+  <tr><th>Max marks</th><td>{{ exam.max_marks }}</td></tr>
+  <tr><th>Booking window</th><td>{{ exam.booking_start }} to {{ exam.booking_end }}</td></tr>
+  <tr><th>Status</th><td><span class="badge {{ exam.status.value }}">{{ exam.status.value }}</span></td></tr>
+</table>
+
+<h3>Slots</h3>
+{% if mine %}
+  <div class="alert">You have booked a slot for this exam. <a href="{{ url_for('student.bookings') }}">See my bookings</a></div>
+{% elif not can_book %}
+  <div class="alert warning">Booking is not open for this exam right now.</div>
+{% endif %}
+
+{% if show_slots %}
+<table>
+  <tr><th>Date</th><th>Time</th><th>Examiner</th><th>Seats left</th><th>Action</th></tr>
+  {% for slot, examiner in rows %}
+  <tr>
+    <td>{{ slot.slot_date }}</td>
+    <td>{{ slot.start_time.strftime('%H:%M') }} - {{ slot.end_time.strftime('%H:%M') }}</td>
+    <td>{{ examiner.name }}</td>
+    <td>{{ slot.available_seats }} / {{ slot.capacity }}</td>
+    <td>
+      {% if mine and mine.slot_id == slot.id %}
+        <span class="badge booked">Your booking</span>
+      {% elif can_book and slot.available_seats > 0 %}
+        <form method="post" action="{{ url_for('student.book', slot_id=slot.id) }}"><button class="btn small">Book</button></form>
+      {% elif slot.available_seats == 0 %}
+        <span class="badge inactive">Full</span>
+      {% else %}-{% endif %}
+    </td>
+  </tr>
+  {% else %}
+  <tr><td colspan="5">No slots yet.</td></tr>
+  {% endfor %}
+</table>
+{% else %}
+<p>Slots will be visible when booking opens.</p>
+{% endif %}
+{% endblock %}

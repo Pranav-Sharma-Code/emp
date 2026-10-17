@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block content %}
+<a class="back" href="{{ url_for('admin.exams') }}">&larr; Back to exams</a>
+{% set can_edit_rubrics = exam.status.value == 'draft' %}
+{% set can_edit_examiners = exam.status.value in ('draft', 'slotcreation') %}
+<h2>{{ exam.name }}</h2>
+<table>
+  <tr><th>Course</th><td>{{ course.code }} - {{ course.name }}</td></tr>
+  <tr><th>Type</th><td>{{ exam.exam_type.value }}</td></tr>
+  <tr><th>Duration</th><td>{{ exam.duration_minutes }} min</td></tr>
+  <tr><th>Max marks</th><td>{{ exam.max_marks }}</td></tr>
+  <tr><th>Slot creation</th><td>{{ exam.slot_create_start }} to {{ exam.slot_create_end }}</td></tr>
+  <tr><th>Booking</th><td>{{ exam.booking_start }} to {{ exam.booking_end }}</td></tr>
+  <tr><th>Status</th><td><span class="badge {{ exam.status.value }}">{{ exam.status.value }}</span>{% if exam.results_published %} (results published){% endif %}</td></tr>
+</table>
+
+<p>
+  {% if step %}
+  <form method="post" action="{{ url_for('admin.exam_status', exam_id=exam.id, action=step[0]) }}" style="display:inline">
+    <button class="btn">{{ step[1] }}</button>
+  </form>
+  {% endif %}
+  {% if exam.status.value == 'completed' and not exam.results_published %}
+  <form method="post" action="{{ url_for('admin.exam_status', exam_id=exam.id, action='publish-results') }}" style="display:inline">
+    <button class="btn">Publish results</button>
+  </form>
+  {% endif %}
+  {% if exam.status.value == 'draft' %}
+    <a class="btn light" href="{{ url_for('admin.exam_edit', exam_id=exam.id) }}">Edit</a>
+    <form method="post" action="{{ url_for('admin.exam_delete', exam_id=exam.id) }}" style="display:inline">
+      <button class="btn light">Delete</button>
+    </form>
+  {% endif %}
+</p>
+
+<h3>Rubric criteria (total: {{ total }} / 100)</h3>
+<table>
+  <tr><th>Criterion</th><th>Max marks</th><th>Weightage %</th>{% if can_edit_rubrics %}<th>Action</th>{% endif %}</tr>
+  {% for r in rubrics %}
+  <tr>
+    <td>{{ r.criterion_name }}</td><td>{{ r.max_marks }}</td><td>{{ r.weightage }}</td>
+    {% if can_edit_rubrics %}
+    <td><form method="post" action="{{ url_for('admin.rubric_delete', exam_id=exam.id, rubric_id=r.id) }}"><button class="btn small">Remove</button></form></td>
+    {% endif %}
+  </tr>
+  {% else %}
+  <tr><td colspan="{{ 4 if can_edit_rubrics else 3 }}">No criteria yet.</td></tr>
+  {% endfor %}
+</table>
+
+{% if exam.status.value == 'draft' %}
+<form method="post" action="{{ url_for('admin.rubric_new', exam_id=exam.id) }}" class="box" style="margin-top:10px">
+  <input name="criterion_name" placeholder="Criterion (e.g. Concept clarity)" required>
+  <input type="number" name="max_marks" placeholder="Max marks" min="1" required>
+  <input type="number" name="weightage" placeholder="Weightage %" min="1" max="100" step="any" required>
+  <button class="btn">Add criterion</button>
+</form>
+{% endif %}
+
+<h3>Assigned examiners</h3>
+<table>
+  <tr><th>Name</th><th>Email</th>{% if can_edit_examiners %}<th>Action</th>{% endif %}</tr>
+  {% for u in assigned %}
+  <tr>
+    <td>{{ u.name }}</td><td>{{ u.email }}</td>
+    {% if can_edit_examiners %}
+    <td><form method="post" action="{{ url_for('admin.examiner_remove', exam_id=exam.id, user_id=u.id) }}"><button class="btn small">Remove</button></form></td>
+    {% endif %}
+  </tr>
+  {% else %}
+  <tr><td colspan="{{ 3 if can_edit_examiners else 2 }}">No examiner assigned.</td></tr>
+  {% endfor %}
+</table>
+
+{% if available and can_edit_examiners %}
+<form method="post" action="{{ url_for('admin.examiner_assign', exam_id=exam.id) }}" class="box" style="margin-top:10px">
+  <select name="examiner_id">
+    {% for u in available %}<option value="{{ u.id }}">{{ u.name }} ({{ u.department }})</option>{% endfor %}
+  </select>
+  <button class="btn">Assign examiner</button>
+</form>
+{% endif %}
+{% endblock %}

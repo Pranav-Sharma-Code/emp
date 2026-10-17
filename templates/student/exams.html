@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<a class="back" href="{{ url_for('student.dashboard') }}">&larr; Back to dashboard</a>
+<h2>Exams</h2>
+
+<form method="get" class="filters">
+  <input name="q" placeholder="Search by name" value="{{ f.q }}">
+  <select name="course">
+    <option value="">All courses</option>
+    {% for c in courses %}<option value="{{ c.id }}" {{ 'selected' if f.course == c.id }}>{{ c.code }}</option>{% endfor %}
+  </select>
+  <select name="type">
+    <option value="">All types</option>
+    {% for t in types %}<option value="{{ t }}" {{ 'selected' if f.type == t }}>{{ t|capitalize }}</option>{% endfor %}
+  </select>
+  <select name="status">
+    <option value="">All status</option>
+    {% for s in statuses %}<option value="{{ s }}" {{ 'selected' if f.status == s }}>{{ s }}</option>{% endfor %}
+  </select>
+  <button class="btn">Search</button>
+  <a class="btn light" href="{{ url_for('student.exams') }}">Reset</a>
+</form>
+
+<table>
+  <tr><th>Name</th><th>Course</th><th>Type</th><th>Status</th><th>Booking window</th><th>Action</th></tr>
+  {% for exam, course in rows %}
+  <tr>
+    <td>{{ exam.name }}</td>
+    <td>{{ course.code }}</td>
+    <td>{{ exam.exam_type.value }}</td>
+    <td><span class="badge {{ exam.status.value }}">{{ exam.status.value }}</span></td>
+    <td>{{ exam.booking_start.strftime('%d %b %H:%M') }} - {{ exam.booking_end.strftime('%d %b %H:%M') }}</td>
+    <td><a href="{{ url_for('student.exam_detail', exam_id=exam.id) }}">View</a></td>
+  </tr>
+  {% else %}
+  <tr><td colspan="6">No exams found.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

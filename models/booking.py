@@ -1,17 +1,26 @@
-from sqlalchemy import UniqueConstraint
+from sqlalchemy import Index, text
 
 from extensions import db
-from models.enums import BookingStatus
+from models.enums import BookingStatus, sa_enum
+from models.mixins import TimestampMixin
 
 
-class bookings_table(db.Model):
+class Booking(TimestampMixin, db.Model):
     __tablename__ = "bookings"
-    id = db.Column(db.Integer, autoincrement=True, unique=True, primary_key=True)
-    student_id = db.Column(db.Integer, forign_key=True)
-    slot_id = db.Column(db.Integer, forign_key=True)
-    booking_date = db.Column(db.date, nullable=False)
-    status = db.Column(db.Enum(BookingStatus), nullable=False, default=BookingStatus.Completed)
-    old_slot_id = db.Column(db.Integer)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    student_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    slot_id = db.Column(db.Integer, db.ForeignKey("slots.id"), nullable=False)
+    exam_id = db.Column(db.Integer, db.ForeignKey("exams.id"), nullable=False)
+    booking_date = db.Column(db.DateTime, nullable=False)
+    status = db.Column(sa_enum(BookingStatus), nullable=False, default=BookingStatus.Booked)
+    old_slot_id = db.Column(db.Integer, db.ForeignKey("slots.id"), nullable=True)
     __table_args__ = (
-        UniqueConstraint("student_id", "slot_id", name="unique_student_slot"),
+        # one active booking per student per exam
+        Index(
+            "unique_active_booking",
+            "student_id",
+            "exam_id",
+            unique=True,
+            sqlite_where=text("status = 'booked'"),
+        ),
     )

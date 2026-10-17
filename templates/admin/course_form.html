@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ 'Edit' if course else 'New' }} Course</h2>
+<form method="post" class="box">
+  <input name="code" placeholder="Code (e.g. CS101)" value="{{ course.code if course else '' }}" required maxlength="10">
+  <input name="name" placeholder="Course name" value="{{ course.name if course else '' }}" required>
+  <input name="description" placeholder="Description" value="{{ course.description if course and course.description else '' }}">
+  <button class="btn">Save</button>
+  <a class="btn light" href="{{ url_for('admin.courses') }}">Cancel</a>
+</form>
+{% endblock %}

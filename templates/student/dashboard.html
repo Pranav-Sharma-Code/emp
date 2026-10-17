@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Student Dashboard</h2>
+<table>
+  <tr><th><a href="{{ url_for('student.exams', status='bookingopen') }}">Exams open for booking</a></th><td>{{ open_exams }}</td></tr>
+  <tr><th><a href="{{ url_for('student.bookings') }}">My upcoming bookings</a></th><td>{{ upcoming|length }}</td></tr>
+</table>
+
+<h3>Next bookings</h3>
+<table>
+  <tr><th>Exam</th><th>Date</th><th>Time</th></tr>
+  {% for b, slot, exam in upcoming[:3] %}
+  <tr>
+    <td>{{ exam.name }}</td>
+    <td>{{ slot.slot_date }}</td>
+    <td>{{ slot.start_time.strftime('%H:%M') }} - {{ slot.end_time.strftime('%H:%M') }}</td>
+  </tr>
+  {% else %}
+  <tr><td colspan="3">No bookings yet.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

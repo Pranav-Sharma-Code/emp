@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<a class="back" href="{{ url_for('admin.dashboard') }}">&larr; Back to dashboard</a>
+<h2>Courses</h2>
+<p><a class="btn" href="{{ url_for('admin.course_new') }}">+ New Course</a></p>
+<table>
+  <tr><th>Code</th><th>Name</th><th>Status</th><th>Action</th></tr>
+  {% for c in items %}
+  <tr>
+    <td>{{ c.code }}</td>
+    <td>{{ c.name }}</td>
+    <td><span class="badge {{ 'active' if c.status else 'inactive' }}">{{ 'Active' if c.status else 'Inactive' }}</span></td>
+    <td>
+      <div class="actions">
+        <a class="btn light small" href="{{ url_for('admin.course_edit', course_id=c.id) }}">Edit</a>
+        <form method="post" action="{{ url_for('admin.course_toggle', course_id=c.id) }}">
+          <button class="btn small">{{ 'Deactivate' if c.status else 'Activate' }}</button>
+        </form>
+        <form method="post" action="{{ url_for('admin.course_delete', course_id=c.id) }}">
+          <button class="btn small danger">Delete</button>
+        </form>
+      </div>
+    </td>
+  </tr>
+  {% else %}
+  <tr><td colspan="4">No courses yet.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}
