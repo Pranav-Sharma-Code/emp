@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<a class="back" href="{{ url_for('admin.dashboard') }}">&larr; Back to dashboard</a>
+<h2>Reports</h2>
+
+<table>
+  <tr><th>Total bookings</th><td>{{ total }}</td></tr>
+  <tr><th>Completion rate (evaluated / not cancelled)</th><td>{{ rate }}%</td></tr>
+</table>
+
+<h3>Booking trend</h3>
+<div class="chart"><canvas id="trend"></canvas></div>
+
+<h3>Examiner workload</h3>
+<div class="chart"><canvas id="workload"></canvas></div>
+
+<h3>Bookings by status</h3>
+<div class="chart small"><canvas id="status"></canvas></div>
+
+<noscript><p>Charts need JavaScript. The numbers are also available in Bookings and Examiners.</p></noscript>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  const data = {{ data|tojson }};
+  new Chart(document.getElementById('trend'), {
+    type: 'line',
+    data: { labels: data.trend.labels,
+            datasets: [{ label: 'Bookings per day', data: data.trend.values, borderColor: '#2b5fd9', tension: 0.2 }] },
+    options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+  });
+  new Chart(document.getElementById('workload'), {
+    type: 'bar',
+    data: { labels: data.workload.labels,
+            datasets: [{ label: 'Slots', data: data.workload.slots, backgroundColor: '#2b5fd9' },
+                       { label: 'Bookings', data: data.workload.bookings, backgroundColor: '#1d6b2b' }] },
+    options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+  });
+  new Chart(document.getElementById('status'), {
+    type: 'doughnut',
+    data: { labels: data.status.labels,
+            datasets: [{ data: data.status.values, backgroundColor: ['#2b5fd9', '#1d6b2b', '#999999', '#c0392b'] }] },
+    options: { maintainAspectRatio: false }
+  });
+</script>
+{% endblock %}

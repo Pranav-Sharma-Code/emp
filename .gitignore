@@ -1,5 +1,30 @@
-# Virtual environment
+# Virtual environments
 venv/
 .venv/
+env/
+
+# Python cache
 __pycache__/
+*.py[cod]
+
+# Database (created automatically on first run) and backups
 instance/
+*.db
+*.sqlite3
+*.bak
+
+# Secrets / local settings
+.env
+.env.*
+
+# Editors and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Build / packaging output
+*.zip
+dist/
+build/
+*.egg-info/

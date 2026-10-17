@@ -5,9 +5,10 @@ from flask import render_template, request, redirect, url_for, flash, abort
 
 from extensions import db
 from helpers import role_req
-from models import User, Course, Exam, ExamExaminer, Rubric
-from models.enums import UserRole, UserStatus, ExamType, ExamState
 from routes.admin import admin_bp
+from models import User, Course, Exam, ExamExaminer, Rubric, Slot, Booking
+from models.enums import UserRole, UserStatus, ExamType, ExamState, SlotStatus, BookingStatus
+
 
 DATE_FMT = "%Y-%m-%dT%H:%M"      # format of <input type="datetime-local">
 DATE_FIELDS = ["slot_create_start", "slot_create_end", "booking_start", "booking_end"]
@@ -274,6 +275,19 @@ def exam_status(exam_id, action):
         if not ExamExaminer.query.filter_by(exam_id=exam.id).first():
             flash("Assign at least one examiner first")
             return back
+
+    if action == "complete":
+        waiting = Booking.query.filter_by(exam_id=exam.id,
+                                          status=BookingStatus.Booked).count()
+        if waiting:
+            flash("%s booking(s) are not evaluated yet" % waiting)
+            return back
+        Slot.query.filter(Slot.exam_id == exam.id,
+                          Slot.status != SlotStatus.Cancelled
+                          ).update({Slot.status: SlotStatus.Completed},
+                                   synchronize_session=False)
+
+
 
     exam.status = to_state
     db.session.commit()

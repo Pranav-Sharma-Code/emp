@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<a class="back" href="{{ url_for('examiner.evaluations') }}">&larr; Back to evaluations</a>
+<h2>Evaluate: {{ student.name }}</h2>
+<p>Exam: <b>{{ exam.name }}</b> (max {{ exam.max_marks }} marks) &middot;
+    Slot: {{ slot.slot_date }} {{ slot.start_time.strftime('%H:%M') }}</p>
+
+{% if not editable %}
+<div class="alert warning">This evaluation is read-only now.</div>
+{% endif %}
+{% if evaluation and evaluation.total_marks is not none %}
+<p>Current total: <b>{{ evaluation.total_marks }} / {{ exam.max_marks }}</b></p>
+{% endif %}
+
+<form method="post" class="box" style="max-width:520px">
+    {% for r in rubrics %}
+    <label>{{ r.criterion_name }} (max {{ r.max_marks }}, weightage {{ r.weightage }}%)</label>
+    <input type="number" name="marks_{{ r.id }}" min="0" max="{{ r.max_marks }}" step="any"
+        value="{{ scores[r.id] if r.id in scores else '' }}" {{ 'disabled' if not editable }} required>
+    {% endfor %}
+
+    <label>Remarks</label>
+    <textarea name="remarks" rows="3" maxlength="500" {{ 'disabled' if not editable }}>{{ remarks }}</textarea>
+
+    {% if editable %}<button class="btn">Save evaluation</button>{% endif %}
+    <a class="btn light" href="{{ url_for('examiner.evaluations') }}">{{ 'Cancel' if editable else 'Back' }}</a>
+</form>
+{% endblock %}

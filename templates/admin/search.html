@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+<a class="back" href="{{ url_for('admin.dashboard') }}">&larr; Back to dashboard</a>
+<h2>Search</h2>
+<form method="get" class="filters">
+  <input name="q" placeholder="Name, email, ID, exam..." value="{{ q }}" required>
+  <select name="type">
+    {% for value, label in [('all', 'Everything'), ('students', 'Students'), ('examiners', 'Examiners'), ('exams', 'Exams'), ('bookings', 'Bookings')] %}
+    <option value="{{ value }}" {{ 'selected' if kind == value }}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn">Search</button>
+</form>
+
+{% if q %}
+<p>{{ total }} result(s) for <b>{{ q }}</b></p>
+
+{% if results.students %}
+<h3>Students</h3>
+<table>
+  <tr><th>ID</th><th>Name</th><th>Email</th><th>Enrollment</th></tr>
+  {% for u in results.students %}
+  <tr><td>{{ u.id }}</td><td><a href="{{ url_for('admin.student_detail', user_id=u.id) }}">{{ u.name }}</a></td><td>{{ u.email }}</td><td>{{ u.enrollment_no }}</td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+{% if results.examiners %}
+<h3>Examiners</h3>
+<table>
+  <tr><th>ID</th><th>Name</th><th>Email</th><th>Status</th></tr>
+  {% for u in results.examiners %}
+  <tr><td>{{ u.id }}</td><td><a href="{{ url_for('admin.examiner_detail', user_id=u.id) }}">{{ u.name }}</a></td><td>{{ u.email }}</td><td><span class="badge {{ u.status.value }}">{{ u.status.value }}</span></td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+{% if results.exams %}
+<h3>Exams</h3>
+<table>
+  <tr><th>ID</th><th>Name</th><th>Status</th></tr>
+  {% for e in results.exams %}
+  <tr><td>{{ e.id }}</td><td><a href="{{ url_for('admin.exam_detail', exam_id=e.id) }}">{{ e.name }}</a></td><td><span class="badge {{ e.status.value }}">{{ e.status.value }}</span></td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+{% if results.bookings %}
+<h3>Bookings</h3>
+<table>
+  <tr><th>#</th><th>Student</th><th>Exam</th><th>Date</th><th>Status</th></tr>
+  {% for b, student, exam, slot in results.bookings %}
+  <tr>
+    <td><a href="{{ url_for('admin.booking_detail', booking_id=b.id) }}">{{ b.id }}</a></td>
+    <td>{{ student.name }}</td><td>{{ exam.name }}</td><td>{{ slot.slot_date }}</td>
+    <td><span class="badge {{ b.status.value }}">{{ b.status.value }}</span></td>
+  </tr>
+  {% endfor %}
+</table>
+{% endif %}
+{% endif %}
+{% endblock %}

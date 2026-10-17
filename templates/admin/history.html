@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<a class="back" href="{{ url_for('admin.dashboard') }}">&larr; Back to dashboard</a>
+<h2>History (completed exams)</h2>
+<form method="get" class="filters">
+  <select name="course">
+    <option value="">All courses</option>
+    {% for c in courses %}<option value="{{ c.id }}" {{ 'selected' if f.course == c.id }}>{{ c.code }} - {{ c.name }}</option>{% endfor %}
+  </select>
+  <label>From <input type="date" name="from" value="{{ f['from'] }}"></label>
+  <label>To <input type="date" name="to" value="{{ f['to'] }}"></label>
+  <button class="btn">Filter</button>
+  <a class="btn light" href="{{ url_for('admin.history') }}">Reset</a>
+</form>
+<table>
+  <tr><th>Date</th><th>Course</th><th>Exam</th><th>Student</th><th>Booking</th><th>Marks</th></tr>
+  {% for b, slot, exam, course, student, ev in rows %}
+  <tr>
+    <td>{{ slot.slot_date }}</td>
+    <td>{{ course.code }}</td>
+    <td>{{ exam.name }}</td>
+    <td>{{ student.name }}</td>
+    <td><span class="badge {{ b.status.value }}">{{ b.status.value }}</span></td>
+    <td>{% if ev and ev.total_marks is not none %}{{ ev.total_marks }} / {{ exam.max_marks }}{% else %}-{% endif %}</td>
+  </tr>
+  {% else %}
+  <tr><td colspan="6">No completed exams found.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

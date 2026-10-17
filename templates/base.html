@@ -11,6 +11,37 @@
 <body>
   <div class="navbar">
     <h1>Exam Portal</h1>
+    {% if session.role == 'admin' %}
+    <span class="nav">
+      <a href="{{ url_for('admin.dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('admin.examiners') }}">Examiners</a>
+      <a href="{{ url_for('admin.courses') }}">Courses</a>
+      <a href="{{ url_for('admin.exams') }}">Exams</a>
+      <a href="{{ url_for('admin.students') }}">Students</a>
+      <a href="{{ url_for('admin.slots') }}">Slots</a>
+      <a href="{{ url_for('admin.bookings') }}">Bookings</a>
+      <a href="{{ url_for('admin.history') }}">History</a>
+      <a href="{{ url_for('admin.reports') }}">Reports</a>
+      <a href="{{ url_for('admin.search') }}">Search</a>
+    </span>
+    {% elif session.role == 'examiner' %}
+    <span class="nav">
+      <a href="{{ url_for('examiner.dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('examiner.exams') }}">My Exams</a>
+      <a href="{{ url_for('examiner.slots') }}">My Slots</a>
+      <a href="{{ url_for('examiner.evaluations') }}">Evaluations</a>
+      <a href="{{ url_for('examiner.profile') }}">Profile</a>
+    </span>
+    {% elif session.role == 'student' %}
+    <span class="nav">
+      <a href="{{ url_for('student.dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('student.exams') }}">Exams</a>
+      <a href="{{ url_for('student.bookings') }}">My Bookings</a>
+      <a href="{{ url_for('student.history') }}">History</a>
+      <a href="{{ url_for('student.results') }}">Results</a>
+      <a href="{{ url_for('student.profile') }}">Profile</a>
+    </span>
+    {% endif %}
     {% if session.user_id %}
     <form method="post" action="{{ url_for('auth.logout') }}">
       <span>{{ session.name }} ({{ session.role }})</span>

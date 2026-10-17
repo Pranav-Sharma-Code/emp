@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<a class="back" href="{{ url_for('admin.examiners') }}">&larr; Back to examiners</a>
+<h2>{{ user.name }}</h2>
+<table>
+  <tr><th>ID</th><td>{{ user.id }}</td></tr>
+  <tr><th>Email</th><td>{{ user.email }}</td></tr>
+  <tr><th>Phone</th><td>{{ user.phone or '-' }}</td></tr>
+  <tr><th>Department</th><td>{{ user.department or '-' }}</td></tr>
+  <tr><th>Status</th><td><span class="badge {{ user.status.value }}">{{ user.status.value }}</span></td></tr>
+</table>
+
+<h3>Workload (slots)</h3>
+<table>
+  <tr><th>Exam</th><th>Date</th><th>Time</th><th>Booked</th><th>Capacity</th><th>Status</th><th></th></tr>
+  {% for slot, exam in rows %}
+  <tr>
+    <td>{{ exam.name }}</td>
+    <td>{{ slot.slot_date }}</td>
+    <td>{{ slot.start_time.strftime('%H:%M') }} - {{ slot.end_time.strftime('%H:%M') }}</td>
+    <td>{{ counts.get(slot.id, 0) }}</td>
+    <td>{{ slot.capacity }}</td>
+    <td><span class="badge {{ slot.status.value }}">{{ slot.status.value }}</span></td>
+    <td><a href="{{ url_for('admin.slot_detail', slot_id=slot.id) }}">Open</a></td>
+  </tr>
+  {% else %}
+  <tr><td colspan="7">No slots.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

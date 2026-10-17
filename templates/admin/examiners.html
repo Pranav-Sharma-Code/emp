@@ -6,7 +6,7 @@
   <tr><th>Name</th><th>Email</th><th>Department</th><th>Status</th><th>Action</th></tr>
   {% for p in people %}
   <tr>
-    <td>{{ p.name }}</td>
+    <td><a href="{{ url_for('admin.examiner_detail', user_id=p.id) }}">{{ p.name }}</a></td>
     <td>{{ p.email }}</td>
     <td>{{ p.department }}</td>
     <td><span class="badge {{ p.status.value }}">{{ p.status.value }}</span></td>

@@ -1,11 +1,30 @@
 {% extends "base.html" %}
 {% block content %}
 <h2>Admin Dashboard</h2>
+<form method="get" action="{{ url_for('admin.search') }}" class="filters">
+  <input name="q" placeholder="Search students, examiners, exams, bookings" required>
+  <button class="btn">Search</button>
+</form>
 <table>
-  <tr><th><a href="{{ url_for('admin.examiners') }}">Pending examiners</a></th><td>{{ stats.pending }}</td></tr>
-  <tr><th><a href="{{ url_for('admin.examiners') }}">Examiners</a></th><td>{{ stats.examiners }}</td></tr>
-  <tr><th>Students</th><td>{{ stats.students }}</td></tr>
-  <tr><th><a href="{{ url_for('admin.courses') }}">Courses</a></th><td>{{ stats.courses }}</td></tr>
-  <tr><th><a href="{{ url_for('admin.exams') }}">Exams</a></th><td>{{ stats.exams }}</td></tr>
+  <tr>
+    <th><a href="{{ url_for('admin.examiners') }}">Pending examiners</a></th>
+    <td>{{ stats.pending }}</td>
+  </tr>
+  <tr>
+    <th><a href="{{ url_for('admin.examiners') }}">Examiners</a></th>
+    <td>{{ stats.examiners }}</td>
+  </tr>
+  <tr>
+    <th><a href="{{ url_for('admin.students') }}">Students</a></th>
+    <td>{{ stats.students }}</td>
+  </tr>
+  <tr>
+    <th><a href="{{ url_for('admin.courses') }}">Courses</a></th>
+    <td>{{ stats.courses }}</td>
+  </tr>
+  <tr>
+    <th><a href="{{ url_for('admin.exams') }}">Exams</a></th>
+    <td>{{ stats.exams }}</td>
+  </tr>
 </table>
 {% endblock %}

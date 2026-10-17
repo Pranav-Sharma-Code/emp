@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<a class="back" href="{{ url_for('student.results') }}">&larr; Back to results</a>
+<h2>{{ exam.name }}</h2>
+<p>Total: <b>{{ evaluation.total_marks }} / {{ exam.max_marks }}</b></p>
+<table>
+  <tr><th>Criterion</th><th>Marks</th><th>Weightage %</th></tr>
+  {% for s, r in scores %}
+  <tr><td>{{ r.criterion_name }}</td><td>{{ s.marks }} / {{ r.max_marks }}</td><td>{{ r.weightage }}</td></tr>
+  {% endfor %}
+</table>
+<h3>Examiner remarks</h3>
+<p>{{ evaluation.remarks or 'No remarks.' }}</p>
+{% endblock %}

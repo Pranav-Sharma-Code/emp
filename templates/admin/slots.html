@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<a class="back" href="{{ url_for('admin.dashboard') }}">&larr; Back to dashboard</a>
+<h2>All Slots</h2>
+<form method="get" class="filters">
+  <select name="exam">
+    <option value="">All exams</option>
+    {% for e in exams %}<option value="{{ e.id }}" {{ 'selected' if f.exam == e.id }}>{{ e.name }}</option>{% endfor %}
+  </select>
+  <select name="examiner">
+    <option value="">All examiners</option>
+    {% for u in examiners %}<option value="{{ u.id }}" {{ 'selected' if f.examiner == u.id }}>{{ u.name }}</option>{% endfor %}
+  </select>
+  <select name="status">
+    <option value="">All status</option>
+    {% for s in statuses %}<option value="{{ s }}" {{ 'selected' if f.status == s }}>{{ s }}</option>{% endfor %}
+  </select>
+  <button class="btn">Filter</button>
+  <a class="btn light" href="{{ url_for('admin.slots') }}">Reset</a>
+</form>
+<table>
+  <tr><th>Exam</th><th>Examiner</th><th>Date</th><th>Time</th><th>Seats left</th><th>Status</th><th>Action</th></tr>
+  {% for slot, exam, examiner in rows %}
+  <tr>
+    <td>{{ exam.name }}</td>
+    <td>{{ examiner.name }}</td>
+    <td>{{ slot.slot_date }}</td>
+    <td>{{ slot.start_time.strftime('%H:%M') }} - {{ slot.end_time.strftime('%H:%M') }}</td>
+    <td>{{ slot.available_seats }} / {{ slot.capacity }}</td>
+    <td><span class="badge {{ slot.status.value }}">{{ slot.status.value }}</span></td>
+    <td><a href="{{ url_for('admin.slot_detail', slot_id=slot.id) }}">Open</a></td>
+  </tr>
+  {% else %}
+  <tr><td colspan="7">No slots found.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

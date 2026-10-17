@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<a class="back" href="{{ url_for('admin.slots') }}">&larr; Back to slots</a>
+<h2>Slot #{{ slot.id }}</h2>
+<table>
+  <tr><th>Exam</th><td><a href="{{ url_for('admin.exam_detail', exam_id=exam.id) }}">{{ exam.name }}</a></td></tr>
+  <tr><th>Examiner</th><td><a href="{{ url_for('admin.examiner_detail', user_id=examiner.id) }}">{{ examiner.name }}</a></td></tr>
+  <tr><th>Date</th><td>{{ slot.slot_date }}</td></tr>
+  <tr><th>Time</th><td>{{ slot.start_time.strftime('%H:%M') }} - {{ slot.end_time.strftime('%H:%M') }}</td></tr>
+  <tr><th>Seats</th><td>{{ slot.available_seats }} free of {{ slot.capacity }}</td></tr>
+  <tr><th>Status</th><td><span class="badge {{ slot.status.value }}">{{ slot.status.value }}</span></td></tr>
+</table>
+
+{% if slot.status.value in ('available', 'full') %}
+<h3>Change examiner</h3>
+{% if others %}
+<form method="post" action="{{ url_for('admin.slot_change_examiner', slot_id=slot.id) }}" class="box">
+  <select name="examiner_id">
+    {% for u in others %}<option value="{{ u.id }}">{{ u.name }} ({{ u.department }})</option>{% endfor %}
+  </select>
+  <button class="btn">Give this slot to the examiner</button>
+</form>
+{% else %}
+<p>No other approved examiner available.</p>
+{% endif %}
+{% endif %}
+
+<h3>Students</h3>
+<table>
+  <tr><th>Booking</th><th>Student</th><th>Email</th><th>Status</th></tr>
+  {% for b, student in bookings %}
+  <tr>
+    <td><a href="{{ url_for('admin.booking_detail', booking_id=b.id) }}">#{{ b.id }}</a></td>
+    <td>{{ student.name }}</td>
+    <td>{{ student.email }}</td>
+    <td><span class="badge {{ b.status.value }}">{{ b.status.value }}</span></td>
+  </tr>
+  {% else %}
+  <tr><td colspan="4">No bookings.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

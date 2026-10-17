@@ -1,11 +1,11 @@
-from flask import (Blueprint, render_template, request, redirect,
-                   url_for, flash, session, abort)
+from flask import (Blueprint, render_template, request, redirect, url_for, flash, session, abort)
 
 from extensions import db
 from helpers import role_req, booking_open
-from models import Booking, BookingHistory, Course, Exam, Slot, User
-from models.enums import BookingStatus, ExamState, ExamType, SlotStatus
-from services import booking_service
+from models import (Booking, BookingHistory, Course, Evaluation, EvaluationScore,
+                    Exam, Rubric, Slot, User)
+from models.enums import BookingStatus, EvaluationStatus, ExamState, ExamType, SlotStatus
+from services import booking_service, profile_service
 
 student_bp = Blueprint("student", __name__, url_prefix="/student")
 
@@ -26,8 +26,7 @@ def my_bookings(*conditions):
 @student_bp.route("/dashboard")
 @role_req("student")
 def dashboard():
-    open_exams = [e for e in Exam.query.filter_by(status=ExamState.BookingOpen).all()
-                  if booking_open(e)]
+    open_exams = [e for e in Exam.query.filter_by(status=ExamState.BookingOpen).all() if booking_open(e)]
     upcoming = my_bookings(Booking.status == BookingStatus.Booked)
     return render_template("student/dashboard.html", open_exams=len(open_exams), upcoming=upcoming)
 
@@ -126,3 +125,60 @@ def history():
               .filter(Booking.student_id == me())
               .order_by(BookingHistory.id.desc()).all())
     return render_template("student/history.html", rows=rows, events=events)
+
+
+# ---------- Results ----------
+
+@student_bp.route("/results")
+@role_req("student")
+def results():
+    rows = (db.session.query(Booking, Exam, Evaluation)
+            .join(Exam, Booking.exam_id == Exam.id)
+            .join(Evaluation, Evaluation.booking_id == Booking.id)
+            .filter(Booking.student_id == me(),
+                    Exam.results_published.is_(True),
+                    Evaluation.status == EvaluationStatus.Submitted)
+            .order_by(Booking.id.desc()).all())
+    return render_template("student/results.html", rows=rows)
+
+
+@student_bp.route("/results/<int:booking_id>")
+@role_req("student")
+def result_detail(booking_id):
+    booking = Booking.query.get_or_404(booking_id)
+    if booking.student_id != me():
+        abort(404)
+    exam = Exam.query.get(booking.exam_id)
+    evaluation = Evaluation.query.filter_by(booking_id=booking.id).first()
+
+    # results are visible only when submitted AND published
+    if not (evaluation and exam.results_published
+            and evaluation.status == EvaluationStatus.Submitted):
+        abort(404)
+
+    scores = (db.session.query(EvaluationScore, Rubric)
+              .join(Rubric, EvaluationScore.rubric_id == Rubric.id)
+              .filter(EvaluationScore.evaluation_id == evaluation.id)
+              .order_by(Rubric.id).all())
+    return render_template("student/result_detail.html", exam=exam,
+                           evaluation=evaluation, scores=scores)
+
+
+# ---------- Profile ----------
+
+@student_bp.route("/profile", methods=["GET", "POST"])
+@role_req("student")
+def profile():
+    user = User.query.get(me())
+    values = {"name": user.name, "phone": user.phone, "department": user.department}
+
+    if request.method == "POST":
+        ok, message = profile_service.update_profile(user, request.form)
+        flash(message)
+        if ok:
+            session["name"] = user.name
+            return redirect(url_for("student.profile"))
+        values = request.form          # keep what was typed
+
+    return render_template("profile.html", user=user, v=values,
+                           back=url_for("student.dashboard"))

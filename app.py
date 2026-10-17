@@ -16,6 +16,7 @@ from routes.admin import admin_bp
 from routes.examiner import examiner_bp
 from routes.student import student_bp
 import routes.admin_exam
+import routes.admin_extra
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp)

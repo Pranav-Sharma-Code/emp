@@ -2,8 +2,22 @@
 {% block content %}
 <h2>Examiner Dashboard</h2>
 <table>
-  <tr><th><a href="{{ url_for('examiner.exams') }}">Assigned exams</a></th><td>{{ stats.exams }}</td></tr>
-  <tr><th><a href="{{ url_for('examiner.slots') }}">Slots created</a></th><td>{{ stats.slots }}</td></tr>
-  <tr><th>Students booked</th><td>{{ stats.booked }}</td></tr>
+  <tr>
+    <th><a href="{{ url_for('examiner.exams') }}">Assigned exams</a></th>
+    <td>{{ stats.exams }}</td>
+  </tr>
+  <tr>
+    <th><a href="{{ url_for('examiner.slots') }}">Slots created</a></th>
+    <td>{{ stats.slots }}</td>
+  </tr>
+  <tr>
+    <th>Students booked</th>
+    <td>{{ stats.booked }}</td>
+  </tr>
+  <tr>
+    <th><a href="{{ url_for('examiner.evaluations') }}">Pending evaluations</a></th>
+    <td>{{ stats.pending }}</td>
+  </tr>
+
 </table>
 {% endblock %}

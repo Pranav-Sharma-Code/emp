@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<a class="back" href="{{ url_for('admin.bookings') }}">&larr; Back to bookings</a>
+<h2>Booking #{{ booking.id }}</h2>
+<table>
+  <tr><th>Student</th><td><a href="{{ url_for('admin.student_detail', user_id=student.id) }}">{{ student.name }}</a></td></tr>
+  <tr><th>Exam</th><td><a href="{{ url_for('admin.exam_detail', exam_id=exam.id) }}">{{ exam.name }}</a></td></tr>
+  <tr><th>Slot</th><td><a href="{{ url_for('admin.slot_detail', slot_id=slot.id) }}">{{ slot.slot_date }} {{ slot.start_time.strftime('%H:%M') }} - {{ slot.end_time.strftime('%H:%M') }}</a></td></tr>
+  <tr><th>Booked on</th><td>{{ booking.booking_date.strftime('%d %b %Y %H:%M') }}</td></tr>
+  <tr><th>Status</th><td><span class="badge {{ booking.status.value }}">{{ booking.status.value }}</span></td></tr>
+</table>
+
+{% if booking.status.value == 'booked' %}
+<h3>Reschedule</h3>
+{% if options %}
+<form method="post" action="{{ url_for('admin.booking_reschedule', booking_id=booking.id) }}" class="box">
+  <select name="slot_id">
+    {% for s in options %}
+    <option value="{{ s.id }}">{{ s.slot_date }} {{ s.start_time.strftime('%H:%M') }}-{{ s.end_time.strftime('%H:%M') }} ({{ s.available_seats }} seats left)</option>
+    {% endfor %}
+  </select>
+  <button class="btn">Move booking</button>
+</form>
+{% else %}
+<p>No other slot with a free seat for this exam.</p>
+{% endif %}
+
+<h3>Cancel</h3>
+<form method="post" action="{{ url_for('admin.booking_cancel', booking_id=booking.id) }}">
+  <button class="btn danger">Cancel this booking</button>
+</form>
+{% endif %}
+
+<h3>History</h3>
+<table>
+  <tr><th>When</th><th>Action</th><th>Note</th></tr>
+  {% for h in events %}
+  <tr>
+    <td>{{ h.created_at.strftime('%d %b %Y %H:%M') }}</td>
+    <td>{{ h.action }}</td>
+    <td>{{ h.note or '' }}{% if h.action == 'reschedule' %}slot {{ h.from_slot_id }} &rarr; slot {{ h.to_slot_id }}{% endif %}</td>
+  </tr>
+  {% else %}
+  <tr><td colspan="3">Nothing yet.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

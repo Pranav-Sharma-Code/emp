@@ -13,6 +13,7 @@
     <td>{{ slot.available_seats }}</td>
     <td><span class="badge {{ slot.status.value }}">{{ slot.status.value }}</span></td>
     <td>
+      <a href="{{ url_for('examiner.slot_students', slot_id=slot.id) }}">Students</a>
       {% if editable %}
       <div class="actions">
         <a class="btn light small" href="{{ url_for('examiner.slot_edit', slot_id=slot.id) }}">Edit</a>

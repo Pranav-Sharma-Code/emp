@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<a class="back" href="{{ url_for('admin.dashboard') }}">&larr; Back to dashboard</a>
+<h2>Students</h2>
+<form method="get" class="filters">
+  <input name="q" placeholder="Search name, email, enrollment" value="{{ q }}">
+  <button class="btn">Search</button>
+  <a class="btn light" href="{{ url_for('admin.students') }}">Reset</a>
+</form>
+<table>
+  <tr><th>ID</th><th>Name</th><th>Email</th><th>Enrollment</th><th>Bookings</th></tr>
+  {% for p in people %}
+  <tr>
+    <td>{{ p.id }}</td>
+    <td><a href="{{ url_for('admin.student_detail', user_id=p.id) }}">{{ p.name }}</a></td>
+    <td>{{ p.email }}</td>
+    <td>{{ p.enrollment_no }}</td>
+    <td>{{ counts.get(p.id, 0) }}</td>
+  </tr>
+  {% else %}
+  <tr><td colspan="5">No students found.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

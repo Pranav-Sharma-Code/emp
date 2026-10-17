@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<a class="back" href="{{ url_for('student.dashboard') }}">&larr; Back to dashboard</a>
+<h2>My Results</h2>
+<table>
+  <tr><th>Exam</th><th>Marks</th><th>Action</th></tr>
+  {% for b, exam, ev in rows %}
+  <tr>
+    <td>{{ exam.name }}</td>
+    <td>{{ ev.total_marks }} / {{ exam.max_marks }}</td>
+    <td><a href="{{ url_for('student.result_detail', booking_id=b.id) }}">Details</a></td>
+  </tr>
+  {% else %}
+  <tr><td colspan="3">No published results yet.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

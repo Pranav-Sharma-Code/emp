@@ -1,0 +1,278 @@
+<!doctype html><html lang='en'><head><meta charset='utf-8'><title>EMP Project Report</title><style>
+@page { size: A4; margin: 12mm 14mm; }
+* { box-sizing: border-box; }
+body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 9.4pt; line-height: 1.38; color: #1b1b1b; margin: 0; }
+.page { height: 270mm; position: relative; break-after: page; overflow: hidden; }
+.page:last-child { break-after: auto; }
+h1 { font-size: 21pt; margin: 0 0 2px; color: #1f3b73; }
+h2 { font-size: 12pt; margin: 12px 0 5px; color: #1f3b73; border-bottom: 1.5px solid #1f3b73; padding-bottom: 2px; }
+h3 { font-size: 10pt; margin: 8px 0 3px; }
+p { margin: 3px 0 5px; }
+.sub { color: #555; margin-bottom: 8px; font-size: 10.5pt; }
+table { border-collapse: collapse; width: 100%; margin: 4px 0 6px; }
+th, td { border: 1px solid #c9cfdb; padding: 2.5px 6px; text-align: left; vertical-align: top; }
+th { background: #eef1f7; font-weight: 600; }
+.meta td:first-child { width: 28%; background: #eef1f7; font-weight: 600; }
+.ph { background: #fff3c4; padding: 0 4px; border-radius: 3px; font-weight: 600; }
+code, pre { font-family: Consolas, Menlo, monospace; font-size: 8.4pt; }
+pre { background: #f4f5f8; border: 1px solid #d9dde6; border-radius: 4px; padding: 6px 8px; margin: 4px 0 6px; line-height: 1.3; }
+.flow { display: flex; align-items: stretch; gap: 0; margin: 6px 0 8px; }
+.flow div { flex: 1; border: 1.5px solid #1f3b73; border-radius: 5px; padding: 5px 6px; text-align: center; font-size: 8.6pt; background: #f7f9fe; }
+.flow span { align-self: center; padding: 0 4px; color: #1f3b73; font-weight: bold; }
+.two { display: flex; gap: 14px; }
+.two > div { flex: 1; }
+ul { margin: 2px 0 4px; padding-left: 16px; }
+li { margin: 1px 0; }
+.foot { position: absolute; bottom: 0; left: 0; right: 0; border-top: 1px solid #c9cfdb; padding-top: 3px; font-size: 8pt; color: #666; display: flex; justify-content: space-between; }
+.ep th, .ep td { font-size: 7.3pt; padding: 1.2px 4px; line-height: 1.22; white-space: nowrap; }
+.ep td.r { font-family: Consolas, Menlo, monospace; }
+.ep td.m { width: 11%; }
+.tight th, .tight td { font-size: 8.6pt; padding: 1.5px 6px; line-height: 1.28; }
+.tight code { font-size: 7.9pt; }
+.small { font-size: 8.4pt; color: #444; }
+.legend { font-size: 8.4pt; color: #444; margin: 2px 0; }
+</style></head><body>
+<div class="page">
+<h1>Examination Management Portal (EMP)</h1>
+<div class="sub">Project report &mdash; Flask + SQLite web application &middot; October 2026</div>
+
+<table class="meta">
+<tr><td>Student</td><td><span class="ph">[Your full name]</span></td></tr>
+<tr><td>Enrolment no.</td><td><span class="ph">[Your enrolment number]</span></td></tr>
+<tr><td>Source code</td><td>Single ZIP with one root folder (<code>emp/</code>); run with <code>python app.py</code></td></tr>
+<tr><td>Demo video</td><td><span class="ph">[Paste your video link here]</span> (also repeated on page 5)</td></tr>
+</table>
+
+<h2>1. Introduction</h2>
+<p>EMP is a role-based, server-rendered web application that manages oral/practical examinations end to end.
+An <b>Admin</b> creates courses and exams, defines a grading rubric and four date windows, assigns examiners and
+moves each exam through its lifecycle. <b>Examiners</b> (after Admin approval) publish time slots inside the
+slot-creation window and later score every rubric criterion for each student. <b>Students</b> register, search
+exams, book exactly one slot per exam inside the booking window, cancel before the deadline and finally see
+marks, a per-criterion breakdown and remarks once the Admin publishes results.</p>
+<p><b>Core flow:</b> Course &rarr; Exam (+ rubric, + examiners) &rarr; Slot Creation &rarr; Booking Open &rarr; Closed
+&rarr; evaluation &rarr; Completed &rarr; results published. Every action is a plain HTML form post or a link; JavaScript is
+used only for the optional charts on the Admin Reports page.</p>
+
+<h2>2. Technology and frameworks</h2>
+<table>
+<tr><th style="width:26%">Component</th><th style="width:14%">Version</th><th>Used for</th></tr>
+<tr><td>Python</td><td>3.14</td><td>Language of the whole back-end</td></tr>
+<tr><td>Flask</td><td>3.1.3</td><td>Web framework: routing, blueprints (<code>auth, admin, examiner, student</code>), sessions, flash messages</td></tr>
+<tr><td>Flask-SQLAlchemy / SQLAlchemy</td><td>3.1.1 / 2.1.4</td><td>ORM: models, constraints, parameterised queries, transactions</td></tr>
+<tr><td>SQLite</td><td>3 (built in)</td><td>Single-file database <code>instance/app.db</code>, created in code by <code>db.create_all()</code></td></tr>
+<tr><td>Werkzeug</td><td>3.1.9</td><td>Password hashing (<code>generate_password_hash</code> / <code>check_password_hash</code>), signed cookies</td></tr>
+<tr><td>Jinja2</td><td>3.1.6</td><td>Server-side templates with template inheritance and auto-escaping</td></tr>
+<tr><td>HTML5 + custom CSS</td><td>&ndash;</td><td>38 templates, one small stylesheet (<code>static/style.css</code>); no CSS framework, no front-end build step</td></tr>
+<tr><td>Chart.js (CDN, optional)</td><td>4.4.1</td><td>Three charts on the Admin Reports page only</td></tr>
+</table>
+<p class="small">Only <code>Flask</code>, <code>Flask-SQLAlchemy</code> and <code>SQLAlchemy</code> are listed in <code>requirements.txt</code>;
+Werkzeug, Jinja2, itsdangerous, click and blinker are installed automatically as their dependencies.</p>
+
+<h2>3. How to run</h2>
+<pre>pip install -r requirements.txt
+python app.py            # creates instance/app.db and the Admin on first start
+# open http://127.0.0.1:5000      Admin login: admin@emp.com / admin123</pre>
+<p class="small">The Admin is seeded in code on first start; there is no Admin registration page. Students register and are
+active at once; Examiners register as <i>pending</i> and cannot use the portal until the Admin approves them.</p>
+<div class='foot'><span>Examination Management Portal &mdash; Project Report</span><span>Page 1 of 5</span></div></div>
+<div class="page">
+<h2 style="margin-top:0">4. Architecture</h2>
+<p>EMP is a single-process, server-rendered monolith. Routes stay thin: they read the form, call a service and
+render or redirect. Every business rule that matters lives in the service layer or in <code>helpers.py</code>, so a rule
+is written once and cannot be bypassed from a template.</p>
+<div class="flow">
+<div><b>Browser</b><br>Jinja2 pages + plain HTML forms</div><span>&rarr;</span>
+<div><b>Blueprints</b><br>auth &middot; admin &middot; examiner &middot; student<br>role decorators</div><span>&rarr;</span>
+<div><b>Services</b><br>booking &middot; evaluation<br>admin &middot; profile</div><span>&rarr;</span>
+<div><b>Models</b><br>SQLAlchemy<br>10 tables + constraints</div><span>&rarr;</span>
+<div><b>SQLite</b><br>instance/app.db</div>
+</div>
+
+<div class="two">
+<div>
+<h3>Project structure</h3>
+<pre>emp/
+|-- app.py            app, blueprints, create_all, Admin seed
+|-- extensions.py     db = SQLAlchemy()
+|-- helpers.py        role_req, examiner_required,
+|                     slot_creation_open, slots_editable,
+|                     booking_open
+|-- models/           one file per table + enums.py
+|-- routes/           auth, admin, admin_exam,
+|                     admin_extra, examiner, student
+|-- services/         booking_service, evaluation_service,
+|                     admin_service, profile_service
+|-- templates/        base.html + admin/ examiner/
+|                     student/ auth/ (38 files)
+|-- static/style.css
+|-- report/           this report
+`-- requirements.txt</pre>
+</div>
+<div>
+<h3>Security</h3>
+<ul>
+<li>Passwords stored only as Werkzeug hashes.</li>
+<li>Flask signed-cookie session holds <code>user_id</code>, <code>role</code>, <code>name</code>.</li>
+<li><code>role_req(role)</code> guards each page: not logged in &rarr; login, wrong role &rarr; <b>403</b>.</li>
+<li><code>examiner_required</code> also shows the &ldquo;pending&rdquo; page until the examiner is approved.</li>
+<li>Object-level checks: examiner &rarr; own slots/students only (403); student &rarr; own bookings/results only (404).</li>
+<li>All queries go through SQLAlchemy (parameterised); Jinja auto-escaping stays on.</li>
+<li>State-changing actions are POST forms, never links.</li>
+<li>Results are hidden (404) until the Admin publishes them.</li>
+</ul>
+</div>
+</div>
+
+<h2>5. Business rules and where they are enforced</h2>
+<table class="tight">
+<tr><th style="width:36%">Rule</th><th>Enforced by</th></tr>
+<tr><td>Slots only in the creation period</td><td><code>slot_creation_open</code>: status Slot Creation <b>and</b> now inside the date window; examiner must be assigned</td></tr>
+<tr><td>Edit / cancel slot before booking starts</td><td><code>slots_editable</code> (before <code>booking_start</code>) and no active bookings in the slot</td></tr>
+<tr><td>Book only in the booking period</td><td><code>booking_open</code> inside <code>booking_service.book</code></td></tr>
+<tr><td>No overbooking</td><td><code>UPDATE slots SET available_seats = available_seats - 1 WHERE id=? AND available_seats &gt; 0</code>; 0 rows changed = full. Plus <code>CHECK(available_seats &gt;= 0 AND &lt;= capacity)</code></td></tr>
+<tr><td>Slot Full at 0 seats, reopened on cancel</td><td>status flips Available &harr; Full in the same transaction</td></tr>
+<tr><td>One booking per exam</td><td>service pre-check + partial unique index on <code>(student_id, exam_id) WHERE status='booked'</code></td></tr>
+<tr><td>No overlapping bookings (extra)</td><td><code>_clashes</code>: same date and overlapping times</td></tr>
+<tr><td>Cancel before the deadline</td><td>status Booked and now &lt; <code>booking_end</code>; seat returned</td></tr>
+<tr><td>Examiner evaluates only own students</td><td><code>slot.examiner_id == session user</code>, otherwise 403</td></tr>
+<tr><td>Marks formula</td><td>total = &Sigma;(awarded &divide; criterion max &times; weightage) &divide; 100 &times; exam max marks</td></tr>
+<tr><td>Exam lifecycle</td><td>Draft &rarr; Slot Creation (needs weightage = 100 and &ge;1 examiner) &rarr; Booking Open &rarr; Closed &rarr; Completed (needs every booking evaluated) &rarr; publish</td></tr>
+<tr><td>Full history, never deleted</td><td><code>booking_history</code> rows for book, cancel, reschedule, examiner change, completion</td></tr>
+<tr><td>Admin reschedule / change examiner</td><td><code>admin_service</code>: one transaction, free seat, no clash, approved examiner; logged</td></tr>
+<tr><td>Deactivate examiner</td><td>refused while they own upcoming slots with bookings</td></tr>
+</table>
+<div class='foot'><span>Examination Management Portal &mdash; Project Report</span><span>Page 2 of 5</span></div></div>
+<div class="page">
+<h2 style="margin-top:0">6. Database design (ER diagram)</h2>
+<p class="legend"><b>PK</b> primary key &middot; <b style="color:#b5651d">FK</b> foreign key &middot; <b>UQ</b> unique.
+Solid lines: parent &rarr; child inside the exam data. Dashed brown lines: references to <code>users</code>
+(examiner / student / acting admin). <b>1</b> = one, <b>N</b> = many. Every table also has a <code>created_at</code> column.</p>
+<svg viewBox='0 0 900 665' xmlns='http://www.w3.org/2000/svg' font-family='Consolas, Menlo, monospace' width='100%'><rect x='10' y='10' width='235' height='103' rx='4' fill='#fff' stroke='#3b4a6b'/><path d='M10 14 h235 v18 h-235 z' fill='#1f3b73'/><rect x='10' y='10' width='235' height='22' rx='4' fill='#1f3b73'/><text x='19' y='25' fill='#fff' font-weight='bold' font-size='12.5'>courses</text><text x='19' y='44' font-size='11.5' font-weight='bold'>id</text><text x='237' y='44' font-size='10' fill='#1f3b73' text-anchor='end'>PK</text><text x='19' y='59' font-size='11.5'>code</text><text x='237' y='59' font-size='10' fill='#1f3b73' text-anchor='end'>UQ</text><text x='19' y='74' font-size='11.5'>name</text><text x='19' y='89' font-size='11.5'>description</text><text x='19' y='104' font-size='11.5'>status</text><rect x='10' y='150' width='235' height='208' rx='4' fill='#fff' stroke='#3b4a6b'/><path d='M10 154 h235 v18 h-235 z' fill='#1f3b73'/><rect x='10' y='150' width='235' height='22' rx='4' fill='#1f3b73'/><text x='19' y='165' fill='#fff' font-weight='bold' font-size='12.5'>exams</text><text x='19' y='184' font-size='11.5' font-weight='bold'>id</text><text x='237' y='184' font-size='10' fill='#1f3b73' text-anchor='end'>PK</text><text x='19' y='199' font-size='11.5'>course_id</text><text x='237' y='199' font-size='10' fill='#b5651d' text-anchor='end'>FK</text><text x='19' y='214' font-size='11.5'>name</text><text x='19' y='229' font-size='11.5'>exam_type</text><text x='19' y='244' font-size='11.5'>duration_minutes</text><text x='19' y='259' font-size='11.5'>max_marks</text><text x='19' y='274' font-size='11.5'>status</text><text x='19' y='289' font-size='11.5'>slot_create_start</text><text x='19' y='304' font-size='11.5'>slot_create_end</text><text x='19' y='319' font-size='11.5'>booking_start</text><text x='19' y='334' font-size='11.5'>booking_end</text><text x='19' y='349' font-size='11.5'>results_published</text><rect x='10' y='395' width='235' height='118' rx='4' fill='#fff' stroke='#3b4a6b'/><path d='M10 399 h235 v18 h-235 z' fill='#1f3b73'/><rect x='10' y='395' width='235' height='22' rx='4' fill='#1f3b73'/><text x='19' y='410' fill='#fff' font-weight='bold' font-size='12.5'>rubrics</text><text x='19' y='429' font-size='11.5' font-weight='bold'>id</text><text x='237' y='429' font-size='10' fill='#1f3b73' text-anchor='end'>PK</text><text x='19' y='444' font-size='11.5'>exam_id</text><text x='237' y='444' font-size='10' fill='#b5651d' text-anchor='end'>FK</text><text x='19' y='459' font-size='11.5'>criterion_name</text><text x='19' y='474' font-size='11.5'>max_marks</text><text x='19' y='489' font-size='11.5'>weightage</text><text x='19' y='504' font-size='11.5'>description</text><rect x='330' y='10' width='235' height='88' rx='4' fill='#fff' stroke='#3b4a6b'/><path d='M330 14 h235 v18 h-235 z' fill='#1f3b73'/><rect x='330' y='10' width='235' height='22' rx='4' fill='#1f3b73'/><text x='339' y='25' fill='#fff' font-weight='bold' font-size='12.5'>exam_examiners</text><text x='339' y='44' font-size='11.5' font-weight='bold'>id</text><text x='557' y='44' font-size='10' fill='#1f3b73' text-anchor='end'>PK</text><text x='339' y='59' font-size='11.5'>exam_id</text><text x='557' y='59' font-size='10' fill='#b5651d' text-anchor='end'>FK</text><text x='339' y='74' font-size='11.5'>examiner_id</text><text x='557' y='74' font-size='10' fill='#b5651d' text-anchor='end'>FK</text><text x='339' y='89' font-size='11.5'>assigned_by</text><text x='557' y='89' font-size='10' fill='#b5651d' text-anchor='end'>FK</text><rect x='330' y='150' width='235' height='163' rx='4' fill='#fff' stroke='#3b4a6b'/><path d='M330 154 h235 v18 h-235 z' fill='#1f3b73'/><rect x='330' y='150' width='235' height='22' rx='4' fill='#1f3b73'/><text x='339' y='165' fill='#fff' font-weight='bold' font-size='12.5'>slots</text><text x='339' y='184' font-size='11.5' font-weight='bold'>id</text><text x='557' y='184' font-size='10' fill='#1f3b73' text-anchor='end'>PK</text><text x='339' y='199' font-size='11.5'>exam_id</text><text x='557' y='199' font-size='10' fill='#b5651d' text-anchor='end'>FK</text><text x='339' y='214' font-size='11.5'>examiner_id</text><text x='557' y='214' font-size='10' fill='#b5651d' text-anchor='end'>FK</text><text x='339' y='229' font-size='11.5'>slot_date</text><text x='339' y='244' font-size='11.5'>start_time</text><text x='339' y='259' font-size='11.5'>end_time</text><text x='339' y='274' font-size='11.5'>capacity</text><text x='339' y='289' font-size='11.5'>available_seats</text><text x='339' y='304' font-size='11.5'>status</text><rect x='330' y='350' width='235' height='133' rx='4' fill='#fff' stroke='#3b4a6b'/><path d='M330 354 h235 v18 h-235 z' fill='#1f3b73'/><rect x='330' y='350' width='235' height='22' rx='4' fill='#1f3b73'/><text x='339' y='365' fill='#fff' font-weight='bold' font-size='12.5'>bookings</text><text x='339' y='384' font-size='11.5' font-weight='bold'>id</text><text x='557' y='384' font-size='10' fill='#1f3b73' text-anchor='end'>PK</text><text x='339' y='399' font-size='11.5'>student_id</text><text x='557' y='399' font-size='10' fill='#b5651d' text-anchor='end'>FK</text><text x='339' y='414' font-size='11.5'>slot_id</text><text x='557' y='414' font-size='10' fill='#b5651d' text-anchor='end'>FK</text><text x='339' y='429' font-size='11.5'>exam_id</text><text x='557' y='429' font-size='10' fill='#b5651d' text-anchor='end'>FK</text><text x='339' y='444' font-size='11.5'>booking_date</text><text x='339' y='459' font-size='11.5'>status</text><text x='339' y='474' font-size='11.5'>old_slot_id</text><text x='557' y='474' font-size='10' fill='#b5651d' text-anchor='end'>FK</text><rect x='330' y='520' width='235' height='133' rx='4' fill='#fff' stroke='#3b4a6b'/><path d='M330 524 h235 v18 h-235 z' fill='#1f3b73'/><rect x='330' y='520' width='235' height='22' rx='4' fill='#1f3b73'/><text x='339' y='535' fill='#fff' font-weight='bold' font-size='12.5'>booking_history</text><text x='339' y='554' font-size='11.5' font-weight='bold'>id</text><text x='557' y='554' font-size='10' fill='#1f3b73' text-anchor='end'>PK</text><text x='339' y='569' font-size='11.5'>booking_id</text><text x='557' y='569' font-size='10' fill='#b5651d' text-anchor='end'>FK</text><text x='339' y='584' font-size='11.5'>action</text><text x='339' y='599' font-size='11.5'>from_slot_id</text><text x='557' y='599' font-size='10' fill='#b5651d' text-anchor='end'>FK</text><text x='339' y='614' font-size='11.5'>to_slot_id</text><text x='557' y='614' font-size='10' fill='#b5651d' text-anchor='end'>FK</text><text x='339' y='629' font-size='11.5'>acted_by</text><text x='557' y='629' font-size='10' fill='#b5651d' text-anchor='end'>FK</text><text x='339' y='644' font-size='11.5'>note</text><rect x='650' y='10' width='235' height='163' rx='4' fill='#fff' stroke='#3b4a6b'/><path d='M650 14 h235 v18 h-235 z' fill='#1f3b73'/><rect x='650' y='10' width='235' height='22' rx='4' fill='#1f3b73'/><text x='659' y='25' fill='#fff' font-weight='bold' font-size='12.5'>users</text><text x='659' y='44' font-size='11.5' font-weight='bold'>id</text><text x='877' y='44' font-size='10' fill='#1f3b73' text-anchor='end'>PK</text><text x='659' y='59' font-size='11.5'>name</text><text x='659' y='74' font-size='11.5'>email</text><text x='877' y='74' font-size='10' fill='#1f3b73' text-anchor='end'>UQ</text><text x='659' y='89' font-size='11.5'>password</text><text x='659' y='104' font-size='11.5'>role</text><text x='659' y='119' font-size='11.5'>status</text><text x='659' y='134' font-size='11.5'>phone</text><text x='659' y='149' font-size='11.5'>department</text><text x='659' y='164' font-size='11.5'>enrollment_no</text><text x='877' y='164' font-size='10' fill='#1f3b73' text-anchor='end'>UQ</text><rect x='650' y='350' width='235' height='118' rx='4' fill='#fff' stroke='#3b4a6b'/><path d='M650 354 h235 v18 h-235 z' fill='#1f3b73'/><rect x='650' y='350' width='235' height='22' rx='4' fill='#1f3b73'/><text x='659' y='365' fill='#fff' font-weight='bold' font-size='12.5'>evaluations</text><text x='659' y='384' font-size='11.5' font-weight='bold'>id</text><text x='877' y='384' font-size='10' fill='#1f3b73' text-anchor='end'>PK</text><text x='659' y='399' font-size='11.5'>booking_id</text><text x='877' y='399' font-size='10' fill='#b5651d' text-anchor='end'>FK UQ</text><text x='659' y='414' font-size='11.5'>examiner_id</text><text x='877' y='414' font-size='10' fill='#b5651d' text-anchor='end'>FK</text><text x='659' y='429' font-size='11.5'>status</text><text x='659' y='444' font-size='11.5'>total_marks</text><text x='659' y='459' font-size='11.5'>remarks</text><rect x='650' y='490' width='235' height='88' rx='4' fill='#fff' stroke='#3b4a6b'/><path d='M650 494 h235 v18 h-235 z' fill='#1f3b73'/><rect x='650' y='490' width='235' height='22' rx='4' fill='#1f3b73'/><text x='659' y='505' fill='#fff' font-weight='bold' font-size='12.5'>evaluation_scores</text><text x='659' y='524' font-size='11.5' font-weight='bold'>id</text><text x='877' y='524' font-size='10' fill='#1f3b73' text-anchor='end'>PK</text><text x='659' y='539' font-size='11.5'>evaluation_id</text><text x='877' y='539' font-size='10' fill='#b5651d' text-anchor='end'>FK</text><text x='659' y='554' font-size='11.5'>rubric_id</text><text x='877' y='554' font-size='10' fill='#b5651d' text-anchor='end'>FK</text><text x='659' y='569' font-size='11.5'>marks</text><polyline points='115,113 115,150' fill='none' stroke='#4f5f80' stroke-width='1.4'/><text x='107' y='128' font-size='11' font-weight='bold' fill='#4f5f80' text-anchor='middle'>1</text><text x='123' y='143' font-size='11' font-weight='bold' fill='#4f5f80' text-anchor='middle'>N</text><polyline points='115,358 115,395' fill='none' stroke='#4f5f80' stroke-width='1.4'/><text x='107' y='373' font-size='11' font-weight='bold' fill='#4f5f80' text-anchor='middle'>1</text><text x='123' y='388' font-size='11' font-weight='bold' fill='#4f5f80' text-anchor='middle'>N</text><polyline points='245,170 275,170 275,45 330,45' fill='none' stroke='#4f5f80' stroke-width='1.4'/><text x='256' y='182' font-size='11' font-weight='bold' fill='#4f5f80' text-anchor='middle'>1</text><text x='319' y='41' font-size='11' font-weight='bold' fill='#4f5f80' text-anchor='middle'>N</text><polyline points='245,200 330,200' fill='none' stroke='#4f5f80' stroke-width='1.4'/><text x='256' y='212' font-size='11' font-weight='bold' fill='#4f5f80' text-anchor='middle'>1</text><text x='319' y='196' font-size='11' font-weight='bold' fill='#4f5f80' text-anchor='middle'>N</text><polyline points='245,260 300,260 300,410 330,410' fill='none' stroke='#4f5f80' stroke-width='1.4'/><text x='256' y='272' font-size='11' font-weight='bold' fill='#4f5f80' text-anchor='middle'>1</text><text x='319' y='406' font-size='11' font-weight='bold' fill='#4f5f80' text-anchor='middle'>N</text><polyline points='447,313 447,350' fill='none' stroke='#4f5f80' stroke-width='1.4'/><text x='439' y='328' font-size='11' font-weight='bold' fill='#4f5f80' text-anchor='middle'>1</text><text x='455' y='343' font-size='11' font-weight='bold' fill='#4f5f80' text-anchor='middle'>N</text><polyline points='447,483 447,520' fill='none' stroke='#4f5f80' stroke-width='1.4'/><text x='439' y='498' font-size='11' font-weight='bold' fill='#4f5f80' text-anchor='middle'>1</text><text x='455' y='513' font-size='11' font-weight='bold' fill='#4f5f80' text-anchor='middle'>N</text><polyline points='565,400 650,400' fill='none' stroke='#4f5f80' stroke-width='1.4'/><text x='576' y='412' font-size='11' font-weight='bold' fill='#4f5f80' text-anchor='middle'>1</text><text x='639' y='396' font-size='11' font-weight='bold' fill='#4f5f80' text-anchor='middle'>N</text><polyline points='767,468 767,490' fill='none' stroke='#4f5f80' stroke-width='1.4'/><text x='759' y='483' font-size='11' font-weight='bold' fill='#4f5f80' text-anchor='middle'>1</text><text x='775' y='483' font-size='11' font-weight='bold' fill='#4f5f80' text-anchor='middle'>N</text><polyline points='245,500 650,500' fill='none' stroke='#4f5f80' stroke-width='1.4'/><text x='256' y='512' font-size='11' font-weight='bold' fill='#4f5f80' text-anchor='middle'>1</text><text x='639' y='496' font-size='11' font-weight='bold' fill='#4f5f80' text-anchor='middle'>N</text><polyline points='650,30 565,30' fill='none' stroke='#b5651d' stroke-width='1.4' stroke-dasharray='5 3'/><text x='639' y='26' font-size='11' font-weight='bold' fill='#b5651d' text-anchor='middle'>1</text><text x='576' y='42' font-size='11' font-weight='bold' fill='#b5651d' text-anchor='middle'>N</text><polyline points='650,60 606,60 606,230 565,230' fill='none' stroke='#b5651d' stroke-width='1.4' stroke-dasharray='5 3'/><text x='639' y='56' font-size='11' font-weight='bold' fill='#b5651d' text-anchor='middle'>1</text><text x='576' y='242' font-size='11' font-weight='bold' fill='#b5651d' text-anchor='middle'>N</text><polyline points='650,90 616,90 616,430 565,430' fill='none' stroke='#b5651d' stroke-width='1.4' stroke-dasharray='5 3'/><text x='639' y='86' font-size='11' font-weight='bold' fill='#b5651d' text-anchor='middle'>1</text><text x='576' y='442' font-size='11' font-weight='bold' fill='#b5651d' text-anchor='middle'>N</text><polyline points='650,120 626,120 626,600 565,600' fill='none' stroke='#b5651d' stroke-width='1.4' stroke-dasharray='5 3'/><text x='639' y='116' font-size='11' font-weight='bold' fill='#b5651d' text-anchor='middle'>1</text><text x='576' y='612' font-size='11' font-weight='bold' fill='#b5651d' text-anchor='middle'>N</text><polyline points='767,173 767,350' fill='none' stroke='#b5651d' stroke-width='1.4' stroke-dasharray='5 3'/><text x='759' y='188' font-size='11' font-weight='bold' fill='#b5651d' text-anchor='middle'>1</text><text x='775' y='343' font-size='11' font-weight='bold' fill='#b5651d' text-anchor='middle'>N</text></svg>
+<h3>Relationships</h3>
+<div class="two small">
+<ul>
+<li>One <b>course</b> has many <b>exams</b>.</li>
+<li>One <b>exam</b> has many rubric criteria, slots, bookings and assigned examiners (<code>exam_examiners</code>, unique per exam + examiner).</li>
+<li>One <b>user</b> with role examiner owns many slots; a user with role student has many bookings.</li>
+<li>One <b>slot</b> has many bookings; <code>bookings.old_slot_id</code> remembers a reschedule.</li>
+</ul>
+<ul>
+<li>One <b>booking</b> has many <code>booking_history</code> rows and at most one <b>evaluation</b> (<code>booking_id</code> unique).</li>
+<li>One <b>evaluation</b> has one <code>evaluation_scores</code> row per rubric criterion (unique per evaluation + rubric).</li>
+<li>Roles (<code>admin, examiner, student</code>) share one <code>users</code> table; <code>status</code> is active / pending / rejected / inactive.</li>
+<li>Enums are stored as lowercase text; CHECK constraints guard marks, capacity, seats, time and date order.</li>
+</ul>
+</div>
+
+<h3>Status lifecycles (stored in the <code>status</code> columns)</h3>
+<table class="tight">
+<tr><th style="width:16%">Entity</th><th>Allowed values and moves</th></tr>
+<tr><td>Exam</td><td>draft &rarr; slotcreation &rarr; bookingopen &rarr; closed &rarr; completed; <code>results_published</code> (0/1) is set after completed. Each step is an Admin button, and the date windows must also hold.</td></tr>
+<tr><td>Slot</td><td>available &harr; full as seats change; cancelled when the examiner removes it; completed when the exam is completed.</td></tr>
+<tr><td>Booking</td><td>booked &rarr; cancelled (student or Admin) &nbsp;or&nbsp; booked &rarr; completed (after the examiner submits the evaluation).</td></tr>
+<tr><td>Evaluation</td><td>draft &rarr; submitted. Results are visible only when it is submitted <b>and</b> the exam's results are published.</td></tr>
+<tr><td>User</td><td>students: active. examiners: pending &rarr; active or rejected; active &harr; inactive. Admin: active (seeded).</td></tr>
+</table>
+<div class='foot'><span>Examination Management Portal &mdash; Project Report</span><span>Page 3 of 5</span></div></div>
+<div class="page">
+<h2 style="margin-top:0">7. Endpoint table (57 routes)</h2>
+<p class="small" style="margin-top:0">Generated from the running Flask app. Every page after login lives under its role prefix
+(<code>/admin</code>, <code>/examiner</code>, <code>/student</code>); opening another role's URL returns <b>403</b>.
+POST routes are plain HTML form submissions followed by a redirect. The optional JSON API (<code>/api/v1</code>) is not part of this build.</p>
+<table class="ep">
+<tr><th>Method</th><th>Route</th><th>Access</th><th>Purpose</th></tr>
+<tr><td class='m'>GET</td><td class='r'>/</td><td>Public</td><td>Landing page</td></tr>
+<tr><td class='m'>GET/POST</td><td class='r'>/login</td><td>Public</td><td>Login for all roles, redirects by role</td></tr>
+<tr><td class='m'>GET/POST</td><td class='r'>/register/&lt;role&gt;</td><td>Public</td><td>Register as student / examiner (examiner starts pending)</td></tr>
+<tr><td class='m'>POST</td><td class='r'>/logout</td><td>Any user</td><td>End the session</td></tr>
+<tr><td class='m'>GET</td><td class='r'>/admin/bookings</td><td>Admin</td><td>All bookings with filters</td></tr>
+<tr><td class='m'>GET</td><td class='r'>/admin/bookings/&lt;booking_id&gt;</td><td>Admin</td><td>Booking detail and history</td></tr>
+<tr><td class='m'>POST</td><td class='r'>/admin/bookings/&lt;booking_id&gt;/cancel</td><td>Admin</td><td>Cancel a booking</td></tr>
+<tr><td class='m'>POST</td><td class='r'>/admin/bookings/&lt;booking_id&gt;/reschedule</td><td>Admin</td><td>Move a booking to another slot</td></tr>
+<tr><td class='m'>GET</td><td class='r'>/admin/bookings/export.csv</td><td>Admin</td><td>Download bookings as CSV</td></tr>
+<tr><td class='m'>GET</td><td class='r'>/admin/courses</td><td>Admin</td><td>Course list</td></tr>
+<tr><td class='m'>POST</td><td class='r'>/admin/courses/&lt;course_id&gt;/delete</td><td>Admin</td><td>Delete a course (blocked if it has exams)</td></tr>
+<tr><td class='m'>GET/POST</td><td class='r'>/admin/courses/&lt;course_id&gt;/edit</td><td>Admin</td><td>Edit a course</td></tr>
+<tr><td class='m'>POST</td><td class='r'>/admin/courses/&lt;course_id&gt;/toggle</td><td>Admin</td><td>Activate / deactivate a course</td></tr>
+<tr><td class='m'>GET/POST</td><td class='r'>/admin/courses/new</td><td>Admin</td><td>Create a course</td></tr>
+<tr><td class='m'>GET</td><td class='r'>/admin/dashboard</td><td>Admin</td><td>Totals and pending-examiner count</td></tr>
+<tr><td class='m'>GET</td><td class='r'>/admin/examiners</td><td>Admin</td><td>Examiner list and approval queue</td></tr>
+<tr><td class='m'>GET</td><td class='r'>/admin/examiners/&lt;user_id&gt;</td><td>Admin</td><td>Examiner profile and workload</td></tr>
+<tr><td class='m'>POST</td><td class='r'>/admin/examiners/&lt;user_id&gt;/&lt;action&gt;</td><td>Admin</td><td>Approve / reject / deactivate / reactivate</td></tr>
+<tr><td class='m'>GET</td><td class='r'>/admin/exams</td><td>Admin</td><td>Exam list</td></tr>
+<tr><td class='m'>GET</td><td class='r'>/admin/exams/&lt;exam_id&gt;</td><td>Admin</td><td>Exam page: rubric, examiners, status buttons</td></tr>
+<tr><td class='m'>POST</td><td class='r'>/admin/exams/&lt;exam_id&gt;/delete</td><td>Admin</td><td>Delete an exam (Draft only)</td></tr>
+<tr><td class='m'>GET/POST</td><td class='r'>/admin/exams/&lt;exam_id&gt;/edit</td><td>Admin</td><td>Edit an exam (Draft only)</td></tr>
+<tr><td class='m'>POST</td><td class='r'>/admin/exams/&lt;exam_id&gt;/examiners/&lt;user_id&gt;/remove</td><td>Admin</td><td>Remove an assigned examiner</td></tr>
+<tr><td class='m'>POST</td><td class='r'>/admin/exams/&lt;exam_id&gt;/examiners/add</td><td>Admin</td><td>Assign an examiner to an exam</td></tr>
+<tr><td class='m'>POST</td><td class='r'>/admin/exams/&lt;exam_id&gt;/rubrics/&lt;rubric_id&gt;/delete</td><td>Admin</td><td>Remove a rubric criterion</td></tr>
+<tr><td class='m'>POST</td><td class='r'>/admin/exams/&lt;exam_id&gt;/rubrics/new</td><td>Admin</td><td>Add a rubric criterion</td></tr>
+<tr><td class='m'>POST</td><td class='r'>/admin/exams/&lt;exam_id&gt;/status/&lt;action&gt;</td><td>Admin</td><td>Lifecycle step / publish results</td></tr>
+<tr><td class='m'>GET/POST</td><td class='r'>/admin/exams/new</td><td>Admin</td><td>Create an exam with its four dates</td></tr>
+<tr><td class='m'>GET</td><td class='r'>/admin/history</td><td>Admin</td><td>Completed exams, filter by course / date</td></tr>
+<tr><td class='m'>GET</td><td class='r'>/admin/reports</td><td>Admin</td><td>Charts: trend, workload, completion</td></tr>
+<tr><td class='m'>GET</td><td class='r'>/admin/search</td><td>Admin</td><td>Search students, examiners, exams, bookings</td></tr>
+<tr><td class='m'>GET</td><td class='r'>/admin/slots</td><td>Admin</td><td>All slots with filters</td></tr>
+<tr><td class='m'>GET</td><td class='r'>/admin/slots/&lt;slot_id&gt;</td><td>Admin</td><td>Slot detail and its students</td></tr>
+<tr><td class='m'>POST</td><td class='r'>/admin/slots/&lt;slot_id&gt;/change-examiner</td><td>Admin</td><td>Change the examiner of a slot</td></tr>
+<tr><td class='m'>GET</td><td class='r'>/admin/students</td><td>Admin</td><td>Student list with search</td></tr>
+<tr><td class='m'>GET</td><td class='r'>/admin/students/&lt;user_id&gt;</td><td>Admin</td><td>Student profile, bookings, activity log</td></tr>
+<tr><td class='m'>GET</td><td class='r'>/examiner/dashboard</td><td>Examiner</td><td>Assigned exams, slots, pending evaluations</td></tr>
+<tr><td class='m'>GET/POST</td><td class='r'>/examiner/evaluate/&lt;booking_id&gt;</td><td>Examiner</td><td>Score every criterion + remarks</td></tr>
+<tr><td class='m'>GET</td><td class='r'>/examiner/evaluations</td><td>Examiner</td><td>Pending and finished evaluations</td></tr>
+<tr><td class='m'>GET</td><td class='r'>/examiner/exams</td><td>Examiner</td><td>Assigned exams</td></tr>
+<tr><td class='m'>GET</td><td class='r'>/examiner/exams/&lt;exam_id&gt;</td><td>Examiner</td><td>Exam, rubric and own slots</td></tr>
+<tr><td class='m'>GET/POST</td><td class='r'>/examiner/profile</td><td>Examiner</td><td>Edit contact details and password</td></tr>
+<tr><td class='m'>GET</td><td class='r'>/examiner/slots</td><td>Examiner</td><td>My slots</td></tr>
+<tr><td class='m'>POST</td><td class='r'>/examiner/slots/&lt;slot_id&gt;/cancel</td><td>Examiner</td><td>Cancel a slot (before booking, no bookings)</td></tr>
+<tr><td class='m'>GET/POST</td><td class='r'>/examiner/slots/&lt;slot_id&gt;/edit</td><td>Examiner</td><td>Edit a slot (before booking, no bookings)</td></tr>
+<tr><td class='m'>GET</td><td class='r'>/examiner/slots/&lt;slot_id&gt;/students</td><td>Examiner</td><td>Roster of one slot</td></tr>
+<tr><td class='m'>GET/POST</td><td class='r'>/examiner/slots/new</td><td>Examiner</td><td>Create a slot (creation window only)</td></tr>
+<tr><td class='m'>GET</td><td class='r'>/student/bookings</td><td>Student</td><td>My active bookings</td></tr>
+<tr><td class='m'>POST</td><td class='r'>/student/bookings/&lt;booking_id&gt;/cancel</td><td>Student</td><td>Cancel before the booking deadline</td></tr>
+<tr><td class='m'>GET</td><td class='r'>/student/dashboard</td><td>Student</td><td>Open exams and upcoming bookings</td></tr>
+<tr><td class='m'>GET</td><td class='r'>/student/exams</td><td>Student</td><td>Search / filter exams</td></tr>
+<tr><td class='m'>GET</td><td class='r'>/student/exams/&lt;exam_id&gt;</td><td>Student</td><td>Exam with slots and seats left</td></tr>
+<tr><td class='m'>GET</td><td class='r'>/student/history</td><td>Student</td><td>All bookings and activity log</td></tr>
+<tr><td class='m'>GET/POST</td><td class='r'>/student/profile</td><td>Student</td><td>Edit profile and password</td></tr>
+<tr><td class='m'>GET</td><td class='r'>/student/results</td><td>Student</td><td>Published results</td></tr>
+<tr><td class='m'>GET</td><td class='r'>/student/results/&lt;booking_id&gt;</td><td>Student</td><td>Marks per criterion and remarks</td></tr>
+<tr><td class='m'>POST</td><td class='r'>/student/slots/&lt;slot_id&gt;/book</td><td>Student</td><td>Book a slot (all guards applied)</td></tr>
+</table>
+<div class='foot'><span>Examination Management Portal &mdash; Project Report</span><span>Page 4 of 5</span></div></div>
+<div class="page">
+<h2 style="margin-top:0">8. Testing</h2>
+<ul>
+<li><b>Manual walkthrough</b> of the full story: register examiner (blocked) &rarr; Admin approves &rarr; course, exam, rubric, assignment &rarr; slots &rarr;
+two students book, the third is refused at capacity &rarr; evaluation &rarr; complete &rarr; publish &rarr; student sees results.</li>
+<li><b>Scripted request-level checks</b> (79 assertions, all passing): every page for every role, booking and seat counts, duplicate / full /
+clash refusals, cancel returns the seat, evaluation maths and range checks, 403 / 404 access rules, reschedule, change examiner,
+deactivation rule, profile and password changes.</li>
+<li><b>Clean-install check:</b> in a brand-new virtual environment <code>pip install -r requirements.txt</code> followed by <code>python app.py</code>
+creates the database and the Admin and serves every page.</li>
+</ul>
+
+<h2>9. Known limitations and future work</h2>
+<ul>
+<li>CSRF tokens (Flask-WTF) are not implemented yet; the secret key and default Admin password are development values and must be changed before real use.</li>
+<li>The optional JSON API, PDF scorecard and e-mail notifications are not implemented. Lists are not paginated.</li>
+<li>SQLite allows one writer at a time (fine for a local demo); times are stored as local time without a time-zone.</li>
+</ul>
+
+<h2>10. AI / LLM declaration</h2>
+<p>AI assistance was used in this project. The large-language model <b>Claude (Anthropic)</b>, used through the Claude Code tool,
+helped with: drafting the architecture and database design, writing and reviewing code (routes, services, models, templates, CSS),
+debugging error messages, writing test checks, and writing the README and this report. I ran the application, tested the flows,
+read the code that was produced and can explain it. All AI-generated content was reviewed by me before submission.</p>
+
+<h2>11. Frameworks and libraries used</h2>
+<p>Flask 3.1.3 &middot; Flask-SQLAlchemy 3.1.1 &middot; SQLAlchemy 2.1.4 &middot; Werkzeug 3.1.9 &middot; Jinja2 3.1.6 &middot; itsdangerous 2.2.0 &middot;
+click 8.5.0 &middot; blinker 1.9.0 &middot; MarkupSafe 3.0.4 &middot; SQLite 3 &middot; Chart.js 4.4.1 (CDN, optional) &middot; HTML5 / CSS3 (no CSS framework).</p>
+
+<h2>12. Demo video</h2>
+<table class="meta">
+<tr><td>Video link</td><td><span class="ph">[Paste your video link here]</span></td></tr>
+<tr><td>Suggested demo order</td><td>Admin login &rarr; approve examiner &rarr; course / exam / rubric / assign &rarr; examiner slots &rarr; student books (show full slot) &rarr; evaluation &rarr; publish &rarr; student results &rarr; Admin reschedule, change examiner, search, reports</td></tr>
+</table>
+<div class='foot'><span>Examination Management Portal &mdash; Project Report</span><span>Page 5 of 5</span></div></div></body></html>

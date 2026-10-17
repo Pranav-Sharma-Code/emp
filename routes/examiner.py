@@ -1,12 +1,13 @@
 from datetime import datetime
 
-from flask import (Blueprint, render_template, request, redirect,
-                   url_for, flash, session, abort)
+from flask import (Blueprint, render_template, request, redirect, url_for, flash, session, abort)
 
 from extensions import db
-from helpers import examiner_required, slot_creation_open, slots_editable
-from models import Course, Exam, ExamExaminer, Rubric, Slot, Booking
-from models.enums import BookingStatus, SlotStatus
+from helpers import examiner_required, slot_creation_open, slots_editable, role_req
+from models import (Booking, Course, Evaluation, EvaluationScore, Exam,
+                    ExamExaminer, Rubric, Slot, User)
+from models.enums import BookingStatus, SlotStatus, ExamState
+from services import evaluation_service, profile_service
 
 examiner_bp = Blueprint("examiner", __name__, url_prefix="/examiner")
 
@@ -89,6 +90,12 @@ def dashboard():
                    .join(Slot, Booking.slot_id == Slot.id)
                    .filter(Slot.examiner_id == me(),
                            Booking.status == BookingStatus.Booked).count()),
+
+                "pending": (Booking.query
+                    .join(Slot, Booking.slot_id == Slot.id)
+                    .join(Exam, Booking.exam_id == Exam.id)
+                    .filter(Slot.examiner_id == me(), Booking.status == BookingStatus.Booked, Exam.status == ExamState.Closed).count()),
+
     }
     return render_template("examiner/dashboard.html", stats=stats)
 
@@ -212,3 +219,90 @@ def slot_cancel(slot_id):
         db.session.commit()
         flash("Slot cancelled")
     return redirect(url_for("examiner.slots"))
+
+
+# ---------- Roster ----------
+
+@examiner_bp.route("/slots/<int:slot_id>/students")
+@examiner_required
+def slot_students(slot_id):
+    slot = my_slot_or_403(slot_id)
+    exam = Exam.query.get(slot.exam_id)
+    rows = (db.session.query(Booking, User)
+            .join(User, Booking.student_id == User.id)
+            .filter(Booking.slot_id == slot.id,
+                    Booking.status.in_([BookingStatus.Booked, BookingStatus.Completed]))
+            .all())
+    return render_template("examiner/roster.html", slot=slot, exam=exam, rows=rows)
+
+
+# ---------- Evaluation ----------
+
+@examiner_bp.route("/evaluations")
+@examiner_required
+def evaluations():
+    rows = (db.session.query(Booking, Slot, Exam, User, Evaluation)
+            .join(Slot, Booking.slot_id == Slot.id)
+            .join(Exam, Booking.exam_id == Exam.id)
+            .join(User, Booking.student_id == User.id)
+            .outerjoin(Evaluation, Evaluation.booking_id == Booking.id)
+            .filter(Slot.examiner_id == me(),
+                    Booking.status.in_([BookingStatus.Booked, BookingStatus.Completed]),
+                    Exam.status.in_([ExamState.Closed, ExamState.Completed]))
+            .order_by(Booking.status, Slot.slot_date, Slot.start_time).all())
+    return render_template("examiner/evaluations.html", rows=rows)
+
+
+@examiner_bp.route("/evaluate/<int:booking_id>", methods=["GET", "POST"])
+@examiner_required
+def evaluate(booking_id):
+    booking = Booking.query.get_or_404(booking_id)
+    slot = my_slot_or_403(booking.slot_id)          # not your student -> 403
+    if booking.status == BookingStatus.Cancelled:
+        abort(404)
+
+    exam = Exam.query.get(booking.exam_id)
+    student = User.query.get(booking.student_id)
+    rubrics = Rubric.query.filter_by(exam_id=exam.id).order_by(Rubric.id).all()
+    evaluation = Evaluation.query.filter_by(booking_id=booking.id).first()
+
+    scores, remarks = {}, ""
+    if evaluation:
+        scores = {s.rubric_id: s.marks for s in
+                  EvaluationScore.query.filter_by(evaluation_id=evaluation.id)}
+        remarks = evaluation.remarks or ""
+
+    if request.method == "POST":
+        raw = {r.id: request.form.get("marks_%s" % r.id, "") for r in rubrics}
+        ok, message = evaluation_service.submit(
+            me(), booking.id, raw, request.form.get("remarks", ""))
+        flash(message)
+        if ok:
+            return redirect(url_for("examiner.evaluations"))
+        scores, remarks = raw, request.form.get("remarks", "")   # keep what was typed
+
+    editable = exam.status == ExamState.Closed and not exam.results_published
+    return render_template("examiner/evaluate.html", booking=booking, slot=slot,
+                           exam=exam, student=student, rubrics=rubrics,
+                           evaluation=evaluation, scores=scores, remarks=remarks,
+                           editable=editable)
+
+
+# ---------- Profile ----------
+
+@examiner_bp.route("/profile", methods=["GET", "POST"])
+@examiner_required
+def profile():
+    user = User.query.get(me())
+    values = {"name": user.name, "phone": user.phone, "department": user.department}
+
+    if request.method == "POST":
+        ok, message = profile_service.update_profile(user, request.form)
+        flash(message)
+        if ok:
+            session["name"] = user.name
+            return redirect(url_for("examiner.profile"))
+        values = request.form          # keep what was typed
+
+    return render_template("profile.html", user=user, v=values,
+                           back=url_for("examiner.dashboard"))

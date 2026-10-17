@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<a class="back" href="{{ back }}">&larr; Back to dashboard</a>
+<h2>My Profile</h2>
+
+<table>
+  <tr><th>Email</th><td>{{ user.email }}</td></tr>
+  <tr><th>Role</th><td>{{ user.role.value }}</td></tr>
+  {% if user.role.value == 'student' %}
+  <tr><th>Enrollment no.</th><td>{{ user.enrollment_no }}</td></tr>
+  {% endif %}
+</table>
+
+<h3>Edit details</h3>
+<form method="post" class="box">
+  <label>Name</label>
+  <input name="name" value="{{ v.get('name', '') }}" maxlength="100" required>
+
+  <label>Phone</label>
+  <input name="phone" value="{{ v.get('phone', '') or '' }}" maxlength="20">
+
+  {% if user.role.value == 'examiner' %}
+  <label>Department</label>
+  <input name="department" value="{{ v.get('department', '') or '' }}" maxlength="100" required>
+  {% endif %}
+
+  <h3>Change password (optional)</h3>
+  <label>Current password</label>
+  <input type="password" name="current_password" autocomplete="current-password">
+  <label>New password</label>
+  <input type="password" name="new_password" minlength="6" autocomplete="new-password">
+  <label>Confirm new password</label>
+  <input type="password" name="confirm_password" minlength="6" autocomplete="new-password">
+
+  <button class="btn">Save</button>
+  <a class="btn light" href="{{ back }}">Cancel</a>
+</form>
+{% endblock %}

@@ -16,16 +16,18 @@ def _log(booking, action, acted_by, from_slot=None, to_slot=None):
     ))
 
 
-def _clashes(student_id, slot):
+def _clashes(student_id, slot, ignore_booking_id=None):
     """Does the student already have a booked slot at the same time?"""
-    return (Booking.query
-            .join(Slot, Booking.slot_id == Slot.id)
-            .filter(Booking.student_id == student_id,
-                    Booking.status == BookingStatus.Booked,
-                    Slot.slot_date == slot.slot_date,
-                    Slot.start_time < slot.end_time,
-                    Slot.end_time > slot.start_time)
-            .first() is not None)
+    query = (Booking.query
+             .join(Slot, Booking.slot_id == Slot.id)
+             .filter(Booking.student_id == student_id,
+                     Booking.status == BookingStatus.Booked,
+                     Slot.slot_date == slot.slot_date,
+                     Slot.start_time < slot.end_time,
+                     Slot.end_time > slot.start_time))
+    if ignore_booking_id:
+        query = query.filter(Booking.id != ignore_booking_id)
+    return query.first() is not None
 
 
 def book(student_id, slot_id):

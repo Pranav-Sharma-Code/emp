@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<a class="back" href="{{ url_for('admin.dashboard') }}">&larr; Back to dashboard</a>
+<h2>All Bookings</h2>
+<form method="get" class="filters">
+  <select name="exam">
+    <option value="">All exams</option>
+    {% for e in exams %}<option value="{{ e.id }}" {{ 'selected' if f.exam == e.id }}>{{ e.name }}</option>{% endfor %}
+  </select>
+  <select name="status">
+    <option value="">All status</option>
+    {% for s in statuses %}<option value="{{ s }}" {{ 'selected' if f.status == s }}>{{ s }}</option>{% endfor %}
+  </select>
+  <button class="btn">Filter</button>
+  <a class="btn light" href="{{ url_for('admin.bookings') }}">Reset</a>
+  <a class="btn light" href="{{ url_for('admin.bookings_export', exam=f.exam or '', status=f.status) }}">Download CSV</a>
+</form>
+<table>
+  <tr><th>#</th><th>Student</th><th>Exam</th><th>Date</th><th>Time</th><th>Status</th><th>Action</th></tr>
+  {% for b, slot, exam, student in rows %}
+  <tr>
+    <td>{{ b.id }}</td>
+    <td>{{ student.name }}</td>
+    <td>{{ exam.name }}</td>
+    <td>{{ slot.slot_date }}</td>
+    <td>{{ slot.start_time.strftime('%H:%M') }} - {{ slot.end_time.strftime('%H:%M') }}</td>
+    <td><span class="badge {{ b.status.value }}">{{ b.status.value }}</span></td>
+    <td><a href="{{ url_for('admin.booking_detail', booking_id=b.id) }}">Open</a></td>
+  </tr>
+  {% else %}
+  <tr><td colspan="7">No bookings found.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

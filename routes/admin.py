@@ -1,7 +1,10 @@
+from datetime import date
 from flask import (Blueprint, render_template, request, redirect,
                    url_for, flash, abort)
 
 from extensions import db
+from models import Slot, Booking
+from models.enums import SlotStatus, BookingStatus
 from helpers import role_req
 from models import User, Course, Exam
 from models.enums import UserRole, UserStatus
@@ -46,6 +49,19 @@ def examiner_action(user_id, action):
     }.get(action)
     if new_status is None:
         abort(404)
+
+    if action == "deactivate":
+        busy = (Slot.query
+                .join(Booking, Booking.slot_id == Slot.id)
+                .filter(Slot.examiner_id == user.id,
+                        Slot.slot_date >= date.today(),
+                        Slot.status != SlotStatus.Cancelled,
+                        Booking.status == BookingStatus.Booked)
+                .first())
+        if busy:
+            flash("Cannot deactivate: this examiner has upcoming slots with bookings. "
+                  "Change the examiner of those slots first.")
+            return redirect(url_for("admin.examiners"))
 
     user.status = new_status
     db.session.commit()
